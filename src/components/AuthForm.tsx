@@ -1,7 +1,9 @@
+"use client";
+
 import { FormEvent, useEffect, useState } from "react";
 
 interface AuthForm {
-  mode: "SignIn" | "SignUp";
+  mode: "Signin" | "Signup";
   resetForm?: boolean;
   onSubmit: (data: { email: string; password: string }) => void;
 }
