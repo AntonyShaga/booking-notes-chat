@@ -12,7 +12,7 @@ export default function SignUp() {
     const res = await fetch("/api/auth/password/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ data }),
+      body: JSON.stringify(data),
     });
     const result = await res.json();
     setMessage(result.message);
@@ -29,7 +29,7 @@ export default function SignUp() {
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md w-full max-w-md">
         {isSuccessful ? (
           <>
-            <p className="text-green-500 text-center text-lg font-semibold">Welcome!</p>
+            <p className="text-green-500 text-center text-lg font-semibold">Добро пожаловать!</p>
           </>
         ) : (
           <AuthForm mode="Signup" onSubmit={handleSignup} />
@@ -41,7 +41,7 @@ export default function SignUp() {
         )}
         {isSuccessful && (
           <Link href="/password/login">
-            <p className="text-center text-blue-500 font-bold underline py-4">Back to login</p>
+            <p className="text-center text-blue-500 font-bold underline py-4">Вернуться к входу</p>
           </Link>
         )}
       </div>
