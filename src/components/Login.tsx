@@ -1,48 +1,51 @@
 "use client";
-
 import { useState } from "react";
+import AuthForm from "@/components/AuthForm";
+import Link from "next/link";
 
-export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+export default function SignUp() {
   const [message, setMessage] = useState("");
+  const [isSuccessful, setIsSuccessful] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const handleLogin = async () => {
+  const handleSignup = async (data: { email: string; password: string }) => {
     const res = await fetch("/api/auth/password/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify(data),
     });
+    const result = await res.json();
+    setMessage(result.message);
 
-    const data = await res.json();
-    setMessage(data.message);
-    setIsSuccess(res.status === 200);
+    if (res.status === 200) {
+      setIsSuccessful(true);
+      setIsSuccess(true);
+    } else {
+      setIsSuccess(false);
+    }
   };
 
   return (
-    <div className="p-4 max-w-md mx-auto">
-      <h2 className="text-2xl font-bold mb-4">Вход</h2>
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        className="border p-2 mb-2 w-full"
-      />
-      <input
-        type="password"
-        placeholder="Пароль"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        className="border p-2 mb-2 w-full"
-      />
-      <button onClick={handleLogin} className="bg-blue-500 text-white px-4 py-2 rounded">
-        Войти
-      </button>
-      {message && (
-        <p className={`mt-2 ${isSuccess ? "text-green-600" : "text-red-600"}`}>{message}</p>
-      )}
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md w-full max-w-md">
+        {isSuccessful ? (
+          <>
+            <p className="text-green-500 text-center text-lg font-semibold">Добро пожаловать!</p>
+          </>
+        ) : (
+          <AuthForm mode="Signin" onSubmit={handleSignup} />
+        )}
+        {message && (
+          <p className={`text-center mt-4 ${isSuccess ? "text-green-500" : "text-red-500"}`}>
+            {message}
+          </p>
+        )}
+        {isSuccessful && (
+          <Link href="/password/signup">
+            <p className="text-center text-blue-500 font-bold underline py-4">Вернуться к входу</p>
+          </Link>
+        )}
+      </div>
     </div>
   );
 }
