@@ -13,10 +13,10 @@ export const authRouter = router({
         where: { email: input.email },
       });
 
-      if (!user) {
+      if (!user || !(await argon2.verify(user.password, input.password))) {
         throw new TRPCError({
           code: "UNAUTHORIZED",
-          message: "User not found",
+          message: "Неверный email или пароль",
         });
       }
 

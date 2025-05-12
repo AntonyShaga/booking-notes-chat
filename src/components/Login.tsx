@@ -3,14 +3,16 @@
 import { useState } from "react";
 import AuthForm from "@/components/AuthForm";
 import Link from "next/link";
-import { trpc } from "@/utils/trpc"; // <= tRPC client
+import { trpc } from "@/utils/trpc";
+import { useRouter } from "next/navigation";
 
 export default function SignIn() {
   const [isSuccessful, setIsSuccessful] = useState(false);
-
+  const router = useRouter();
   const loginMutation = trpc.auth.login.useMutation({
     onSuccess: () => {
       setIsSuccessful(true);
+      router.push("/dashboard");
     },
     onError: (error) => {
       setIsSuccessful(false);
