@@ -1,44 +1,36 @@
 "use client";
+
 import { useState } from "react";
 import AuthForm from "@/components/AuthForm";
 import Link from "next/link";
+import { trpc } from "@/utils/trpc"; // <= tRPC client
 
-export default function SignUp() {
-  const [message, setMessage] = useState("");
+export default function SignIn() {
   const [isSuccessful, setIsSuccessful] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
 
-  const handleSignup = async (data: { email: string; password: string }) => {
-    const res = await fetch("/api/auth/password/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    const result = await res.json();
-    setMessage(result.message);
-
-    if (res.status === 200) {
+  const loginMutation = trpc.auth.login.useMutation({
+    onSuccess: () => {
       setIsSuccessful(true);
-      setIsSuccess(true);
-    } else {
-      setIsSuccess(false);
-    }
+    },
+    onError: (error) => {
+      setIsSuccessful(false);
+    },
+  });
+
+  const handleLogin = (data: { email: string; password: string }) => {
+    loginMutation.mutate(data);
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md w-full max-w-md">
         {isSuccessful ? (
-          <>
-            <p className="text-green-500 text-center text-lg font-semibold">Добро пожаловать!</p>
-          </>
+          <p className="text-green-500 text-center text-lg font-semibold">Добро пожаловать!</p>
         ) : (
-          <AuthForm mode="Signin" onSubmit={handleSignup} />
+          <AuthForm mode="Signin" onSubmit={handleLogin} />
         )}
-        {message && (
-          <p className={`text-center mt-4 ${isSuccess ? "text-green-500" : "text-red-500"}`}>
-            {message}
-          </p>
+        {loginMutation.error && (
+          <p className="text-center mt-4 text-red-500">{loginMutation.error.message}</p>
         )}
         {isSuccessful && (
           <Link href="/password/signup">
