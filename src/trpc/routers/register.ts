@@ -35,6 +35,7 @@ export const registerRouter = router({
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
         message: "Произошла ошибка при регистрации",
+        cause: error,
       });
     }
   }),
