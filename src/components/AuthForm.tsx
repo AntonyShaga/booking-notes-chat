@@ -8,10 +8,11 @@ import { loginSchema } from "@/shared/validations/auth";
 interface AuthFormProps {
   mode: "Signin" | "Signup";
   resetForm?: boolean;
+  isLoading?: boolean;
   onSubmit: (data: { email: string; password: string }) => void;
 }
 
-export default function AuthForm({ mode, resetForm, onSubmit }: AuthFormProps) {
+export default function AuthForm({ mode, resetForm, onSubmit, isLoading }: AuthFormProps) {
   const {
     register,
     handleSubmit,
@@ -28,7 +29,7 @@ export default function AuthForm({ mode, resetForm, onSubmit }: AuthFormProps) {
   }, [resetForm, reset]);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
       <h2 className="text-2xl font-bold mb-4 text-center">
         {mode === "Signin" ? "Вход" : "Регистрация"}
       </h2>
@@ -42,7 +43,9 @@ export default function AuthForm({ mode, resetForm, onSubmit }: AuthFormProps) {
             errors.email ? "border-red-500" : ""
           }`}
         />
-        {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>}
+        <div className="min-h-[1.5rem] mt-1 transition-opacity duration-200">
+          {errors.email && <p className="mt-1  text-sm text-red-500">{errors.email.message}</p>}
+        </div>
       </div>
 
       <div>
@@ -54,11 +57,16 @@ export default function AuthForm({ mode, resetForm, onSubmit }: AuthFormProps) {
             errors.password ? "border-red-500" : ""
           }`}
         />
-        {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>}
+        <div className="min-h-[1.5rem] mt-1 transition-opacity duration-200">
+          {errors.password && (
+            <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>
+          )}
+        </div>
       </div>
 
       <button
         type="submit"
+        disabled={isLoading}
         className="w-full py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring focus:ring-blue-300"
       >
         {mode === "Signin" ? "Войти" : "Зарегистрироваться"}

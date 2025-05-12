@@ -4,34 +4,32 @@ import Link from "next/link";
 import { trpc } from "@/utils/trpc";
 import { useRouter } from "next/navigation";
 
-export default function SignUp() {
+export default function SignIn() {
   const router = useRouter();
-  const registerMutation = trpc.register.register.useMutation({
+  const loginMutation = trpc.auth.login.useMutation({
     onSuccess: () => {
       router.push("/dashboard");
     },
   });
 
-  const handleSignup = async (data: { email: string; password: string }) => {
-    registerMutation.mutate(data);
+  const handleLogin = (data: { email: string; password: string }) => {
+    loginMutation.mutate(data);
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md w-full max-w-md">
-        <AuthForm mode="Signup" onSubmit={handleSignup} />
+        <AuthForm mode="Signin" onSubmit={handleLogin} isLoading={loginMutation.isLoading} />
 
         <div className="min-h-[2.5rem] mt-4 transition-opacity duration-200">
-          {registerMutation.error && (
-            <p className="text-center text-red-500 animate-fadeIn">
-              {registerMutation.error.message}
-            </p>
+          {loginMutation.error && (
+            <p className="text-center text-red-500 animate-fadeIn">{loginMutation.error.message}</p>
           )}
         </div>
 
         <div className="text-center mt-4">
-          <Link href="/signin" className="text-blue-500 font-bold underline">
-            Есть аккаунт? Войти
+          <Link href="/signup" className="text-blue-500 font-bold underline">
+            Нет аккаунта? Зарегистрируйтесь
           </Link>
         </div>
       </div>
