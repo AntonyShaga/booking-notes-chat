@@ -16,5 +16,9 @@ model User {
   lastLogin DateTime? @map("last_login")
   isActive  Boolean   @default(true)
 
+  emailVerified            Boolean   @default(false)
+  verificationToken        String?   @unique
+  verificationTokenExpires DateTime?
+
   @@map("users")
 }
