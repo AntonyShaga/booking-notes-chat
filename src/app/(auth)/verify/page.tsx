@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { LoaderCircle, CheckCircle, XCircle } from "lucide-react";
 import { trpc } from "@/utils/trpc";
 import { useRouter } from "next/navigation";
-
+export const dynamic = "force-dynamic";
 export default function VerifyPage() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
