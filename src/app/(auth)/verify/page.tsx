@@ -2,18 +2,26 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 import { LoaderCircle, CheckCircle, XCircle } from "lucide-react";
 import { trpc } from "@/utils/trpc";
+import { useRouter } from "next/navigation";
 
 export default function VerifyPage() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
-
+  const router = useRouter();
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
 
   const verifyMutation = trpc.verifyEmail.verifyEmail.useMutation({
-    onSuccess: () => setStatus("success"),
-    onError: () => setStatus("error"),
+    onSuccess: () => {
+      toast.success("Email подтверждён!");
+      router.replace("/dashboard");
+    },
+    onError: () => {
+      toast.error("Ошибка подтверждения почты");
+      setStatus("error");
+    },
   });
 
   useEffect(() => {
