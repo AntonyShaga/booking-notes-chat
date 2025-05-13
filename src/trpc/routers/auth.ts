@@ -52,8 +52,8 @@ export const authRouter = router({
     const cookieStore = await cookies();
     cookieStore.set("token", token, {
       ...cookieOptions,
-      maxAge: 15 * 60, // 15 минут
-      sameSite: "lax",
+      maxAge: 15 * 60,
+      sameSite: "strict",
     });
 
     cookieStore.set("refreshToken", refreshToken, {

@@ -11,11 +11,31 @@ export const verifyEmailRouter = router({
       if (!user) {
         throw new TRPCError({ code: "BAD_REQUEST", message: "Недействительный токен" });
       }
+
+      if (!user.isActive) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Учётная запись деактивирована",
+        });
+      }
+
+      if (user.verificationTokenExpires && new Date() > user.verificationTokenExpires) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Срок действия токена истёк. Запросите новый.",
+        });
+      }
+
+      if (user.emailVerified) {
+        return { message: "Email уже подтверждён." };
+      }
+
       await ctx.prisma.user.update({
         where: { id: user.id },
         data: {
           emailVerified: true,
           verificationToken: null,
+          verificationTokenExpires: null,
         },
       });
 

@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
 import { randomUUID } from "node:crypto";
 import { resend } from "@/lib/resend";
+import { addHours } from "date-fns";
 
 export const registerRouter = router({
   register: publicProcedure.input(loginSchema).mutation(async ({ input, ctx }) => {
@@ -28,14 +29,15 @@ export const registerRouter = router({
           email: input.email,
           password: hashedPassword,
         },
-        select: { id: true }, // Нам нужен userId
+        select: { id: true },
       });
 
       const verificationToken = randomUUID();
+      const verificationTokenExpires = addHours(new Date(), 24);
 
       await ctx.prisma.user.update({
         where: { id: newUser.id },
-        data: { verificationToken },
+        data: { verificationToken, verificationTokenExpires },
       });
       console.log(input.email);
       await resend.emails.send({
@@ -79,7 +81,7 @@ export const registerRouter = router({
       cookieStore.set("token", token, {
         ...cookieOptions,
         maxAge: 15 * 60,
-        sameSite: "lax",
+        sameSite: "strict",
       });
 
       cookieStore.set("refreshToken", refreshToken, {
