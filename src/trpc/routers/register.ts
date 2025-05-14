@@ -7,9 +7,29 @@ import { cookies } from "next/headers";
 import { randomUUID } from "node:crypto";
 import { resend } from "@/lib/resend";
 import { addHours } from "date-fns";
+import { rateLimiter } from "@/lib/rate-limiter";
 
 export const registerRouter = router({
   register: publicProcedure.input(loginSchema).mutation(async ({ input, ctx }) => {
+    if (!ctx.req) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Request object is missing",
+      });
+    }
+
+    const identifier =
+      ctx.req?.headers.get("x-real-ip") || ctx.req?.headers.get("x-forwarded-for") || "local";
+
+    const rateLimitResult = await rateLimiter.limit(identifier);
+
+    if (!rateLimitResult.success) {
+      throw new TRPCError({
+        code: "TOO_MANY_REQUESTS",
+        message: `Слишком много запросов. Попробуйте через ${Math.ceil((rateLimitResult.reset - Date.now()) / 1000)} секунд.`,
+      });
+    }
+
     const existingUser = await ctx.prisma.user.findUnique({
       where: { email: input.email },
     });
@@ -26,6 +46,13 @@ export const registerRouter = router({
       const tokenId = randomUUID();
       const verificationToken = randomUUID();
       const verificationTokenExpires = addHours(new Date(), 24);
+
+      await ctx.prisma.user.deleteMany({
+        where: {
+          email: input.email,
+          verificationTokenExpires: { lt: new Date() },
+        },
+      });
 
       const newUser = await ctx.prisma.$transaction(async (tx) => {
         const user = await tx.user.create({
