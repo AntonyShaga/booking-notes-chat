@@ -18,6 +18,7 @@ model User {
   emailVerified            Boolean   @default(false)
   verificationToken        String?   @unique
   verificationTokenExpires DateTime?
+  activeRefreshTokens      String[]
 
   @@map("users")
 }

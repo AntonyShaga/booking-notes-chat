@@ -23,34 +23,52 @@ export const registerRouter = router({
 
     try {
       const hashedPassword = await argon2.hash(input.password);
-
-      const newUser = await ctx.prisma.user.create({
-        data: {
-          email: input.email,
-          password: hashedPassword,
-        },
-        select: { id: true },
-      });
-
+      const tokenId = randomUUID();
       const verificationToken = randomUUID();
       const verificationTokenExpires = addHours(new Date(), 24);
 
-      await ctx.prisma.user.update({
-        where: { id: newUser.id },
-        data: { verificationToken, verificationTokenExpires },
+      const newUser = await ctx.prisma.$transaction(async (tx) => {
+        const user = await tx.user.create({
+          data: {
+            email: input.email,
+            password: hashedPassword,
+            activeRefreshTokens: [],
+          },
+          select: { id: true },
+        });
+
+        await tx.user.update({
+          where: { id: user.id },
+          data: {
+            verificationToken,
+            verificationTokenExpires,
+            activeRefreshTokens: { push: tokenId },
+          },
+        });
+
+        return user;
       });
-      console.log(input.email);
-      await resend.emails.send({
-        from: "no-reply@resend.dev",
-        to: input.email,
-        subject: "Подтверждение почты",
-        html: `
-    <p>Здравствуйте! Подтвердите свою почту, перейдя по ссылке:</p>
-    <a href="${process.env.NEXT_PUBLIC_APP_URL}/verify?token=${verificationToken}">
-      Подтвердить Email
-    </a>
-  `,
-      });
+
+      try {
+        await resend.emails.send({
+          from: "no-reply@resend.dev",
+          to: input.email,
+          subject: "Подтверждение почты",
+          html: `
+      <p>Здравствуйте! Подтвердите свою почту, перейдя по ссылке:</p>
+      <a href="${process.env.NEXT_PUBLIC_APP_URL}/verify?token=${verificationToken}">
+        Подтвердить Email
+      </a>`,
+        });
+      } catch (error) {
+        console.error("Ошибка отправки email:", error);
+
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Не удалось отправить письмо для подтверждения почты",
+          cause: error instanceof Error ? error.message : String(error),
+        });
+      }
 
       const jwtSecret = process.env.JWT_SECRET;
       if (!jwtSecret) {
@@ -60,7 +78,6 @@ export const registerRouter = router({
         });
       }
 
-      const tokenId = randomUUID();
       const tokenPayload = {
         userId: newUser.id,
         jti: tokenId,
