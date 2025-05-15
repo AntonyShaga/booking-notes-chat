@@ -2,7 +2,10 @@
 CREATE TABLE "users" (
     "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
-    "password" TEXT NOT NULL,
+    "password" TEXT,
+    "name" TEXT,
+    "picture" TEXT,
+    "googleId" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
     "last_login" TIMESTAMP(3),
@@ -17,6 +20,9 @@ CREATE TABLE "users" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "users_googleId_key" ON "users"("googleId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "users_verificationToken_key" ON "users"("verificationToken");

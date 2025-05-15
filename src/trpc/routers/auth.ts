@@ -7,6 +7,12 @@ import jwt from "jsonwebtoken";
 import { randomUUID } from "node:crypto";
 
 export const authRouter = router({
+  getCurrentUser: publicProcedure.query(({ ctx }) => {
+    if (!ctx.user) {
+      throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
+    return ctx.user;
+  }),
   login: publicProcedure.input(loginSchema).mutation(async ({ input, ctx }) => {
     const user = await ctx.prisma.user.findUnique({
       where: { email: input.email },
