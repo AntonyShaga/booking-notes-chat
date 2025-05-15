@@ -147,7 +147,7 @@ export const registerRouter = router({
       cookieStore.set("refreshToken", refreshToken, {
         ...cookieOptions,
         maxAge: 60 * 60 * 24 * 7,
-        path: "/api/auth/refresh",
+        path: "/",
       });
 
       return {

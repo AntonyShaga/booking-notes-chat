@@ -5,6 +5,7 @@ import { loginSchema } from "@/shared/validations/auth";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 import { randomUUID } from "node:crypto";
+import { redis } from "@/lib/redis"; // Импортируем наш ioredis клиент
 
 export const authRouter = router({
   getCurrentUser: publicProcedure.query(({ ctx }) => {
@@ -22,24 +23,45 @@ export const authRouter = router({
         isActive: true,
       },
     });
+    // Получаем IP для rate-limiting
+    const identifier =
+      ctx.req.headers.get("x-real-ip") || ctx.req.headers.get("x-forwarded-for") || "local";
+
+    // Rate-limiting на чистом ioredis
+    const rateLimitKey = `rate_limit:login:${identifier}`;
+    const currentCount = await redis.incr(rateLimitKey);
+
+    // Устанавливаем TTL только при первом запросе
+    if (currentCount === 1) {
+      await redis.expire(rateLimitKey, 10); // 10 секунд
+    }
+
+    // Проверяем лимит (5 запросов за 10 секунд)
+    if (currentCount > 5) {
+      const ttl = await redis.ttl(rateLimitKey);
+      throw new TRPCError({
+        code: "TOO_MANY_REQUESTS",
+        message: `Слишком много запросов. Попробуйте через ${ttl} секунд.`,
+      });
+    }
 
     if (!user) {
       throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "Пользователь не найден",
+        code: "NOT_FOUND",
+        message: "Пользователь с таким email не найден",
       });
     }
 
     if (!user.isActive) {
       throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "Учетная запись неактивна",
+        code: "FORBIDDEN",
+        message: "Учетная запись неактивна. Подтвердите почту.",
       });
     }
 
     if (!user.password) {
       throw new TRPCError({
-        code: "UNAUTHORIZED",
+        code: "FORBIDDEN",
         message: "Аккаунт зарегистрирован через Google. Войдите через Google.",
       });
     }
@@ -87,7 +109,7 @@ export const authRouter = router({
     cookieStore.set("refreshToken", refreshToken, {
       ...cookieOptions,
       maxAge: 60 * 60 * 24 * 7,
-      path: "/api/auth/refresh",
+      path: "/",
     });
 
     try {
