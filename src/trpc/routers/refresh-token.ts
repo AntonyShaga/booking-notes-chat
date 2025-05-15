@@ -7,16 +7,21 @@ import { randomUUID } from "node:crypto";
 export const refreshTokenRouter = router({
   refreshToken: publicProcedure.mutation(async ({ ctx }) => {
     const cookieStore = await cookies();
-    console.log("refreshToken", cookieStore);
     const refreshToken = cookieStore.get("refreshToken")?.value;
-    console.log("refreshToken", refreshToken);
+
     if (!refreshToken) {
-      throw new TRPCError({ code: "UNAUTHORIZED", message: "Request object is missing" });
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "Refresh token is missing from cookies",
+      });
     }
 
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) {
-      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "JWT secret is not configured",
+      });
     }
 
     try {
@@ -27,7 +32,10 @@ export const refreshTokenRouter = router({
       };
 
       if (!decoded.isRefresh) {
-        throw new TRPCError({ code: "UNAUTHORIZED" });
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Provided token is not a refresh token",
+        });
       }
 
       const user = await ctx.prisma.user.findUnique({
@@ -35,8 +43,18 @@ export const refreshTokenRouter = router({
         select: { id: true, activeRefreshTokens: true },
       });
 
-      if (!user || !user.activeRefreshTokens.includes(decoded.jti)) {
-        throw new TRPCError({ code: "UNAUTHORIZED" });
+      if (!user) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "User not found",
+        });
+      }
+
+      if (!user.activeRefreshTokens.includes(decoded.jti)) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Refresh token is invalid or expired",
+        });
       }
 
       const newTokenId = randomUUID();
@@ -45,12 +63,12 @@ export const refreshTokenRouter = router({
         jti: newTokenId,
       };
 
-      const [newToken, newRefreshToken] = await Promise.all([
+      const [newAccessToken, newRefreshToken] = await Promise.all([
         jwt.sign(tokenPayload, jwtSecret, { expiresIn: "15m" }),
         jwt.sign({ ...tokenPayload, isRefresh: true }, jwtSecret, { expiresIn: "7d" }),
       ]);
 
-      // Обновляем список активных refresh токенов
+      // Update active refresh tokens
       await ctx.prisma.user.update({
         where: { id: user.id },
         data: {
@@ -62,14 +80,14 @@ export const refreshTokenRouter = router({
         },
       });
 
-      // Устанавливаем новые cookies
+      // Set new cookies
       const cookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         path: "/",
       };
 
-      cookieStore.set("token", newToken, {
+      cookieStore.set("token", newAccessToken, {
         ...cookieOptions,
         maxAge: 15 * 60,
         sameSite: "strict",
@@ -78,12 +96,15 @@ export const refreshTokenRouter = router({
       cookieStore.set("refreshToken", newRefreshToken, {
         ...cookieOptions,
         maxAge: 60 * 60 * 24 * 7,
-        path: "/api/auth/refresh",
+        path: "/",
       });
 
       return { success: true };
     } catch (error) {
-      throw new TRPCError({ code: "UNAUTHORIZED" });
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "Failed to refresh token",
+      });
     }
   }),
 });
