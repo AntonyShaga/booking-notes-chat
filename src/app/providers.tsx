@@ -14,6 +14,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
       links: [
         httpBatchLink({
           url: "/api/trpc",
+          fetch(url, options) {
+            return fetch(url, {
+              ...options,
+              credentials: "include", // 👈 Обязательно, чтобы куки отправлялись!
+            });
+          },
         }),
       ],
     })

@@ -39,21 +39,32 @@ export async function GET(req: NextRequest) {
     sub: string;
   };
 
-  // Находим или создаём юзера
-  let user = await prisma.user.findUnique({ where: { googleId } });
+  let user = await prisma.user.findUnique({ where: { email } });
 
-  if (!user) {
+  if (user) {
+    if (!user.googleId) {
+      // Привязываем Google-аккаунт
+      user = await prisma.user.update({
+        where: { email },
+        data: {
+          googleId,
+          emailVerified: true,
+        },
+      });
+    }
+  } else {
+    // Создаем нового пользователя
     user = await prisma.user.create({
       data: {
         email,
         name,
         picture,
         googleId,
+        emailVerified: true,
         activeRefreshTokens: [],
       },
     });
   }
-
   // Генерация токенов
   const jwtSecret = process.env.JWT_SECRET!;
   const tokenId = randomUUID();

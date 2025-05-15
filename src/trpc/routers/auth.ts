@@ -23,10 +23,32 @@ export const authRouter = router({
       },
     });
 
-    if (!user || !user.isActive || !(await argon2.verify(user.password, input.password))) {
+    if (!user) {
       throw new TRPCError({
         code: "UNAUTHORIZED",
-        message: "Неверные учетные данные или учетная запись неактивна",
+        message: "Пользователь не найден",
+      });
+    }
+
+    if (!user.isActive) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "Учетная запись неактивна",
+      });
+    }
+
+    if (!user.password) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "Аккаунт зарегистрирован через Google. Войдите через Google.",
+      });
+    }
+
+    const isPasswordCorrect = await argon2.verify(user.password, input.password);
+    if (!isPasswordCorrect) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "Неверный пароль",
       });
     }
 
