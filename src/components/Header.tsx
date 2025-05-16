@@ -5,7 +5,10 @@ import { trpc } from "@/utils/trpc";
 export default function Header() {
   const { data: user, isLoading } = trpc.auth.getCurrentUser.useQuery();
   const refreshToken = trpc.refreshToken.refreshToken.useMutation();
-  console.log(user, isLoading);
+
+  if (isLoading) return null; // или <HeaderSkeleton />
+  console.log(refreshToken);
+  console.log(user);
   return (
     <header className={"flex gap-2"}>
       <nav className="space-x-6 hidden md:flex">
@@ -13,9 +16,8 @@ export default function Header() {
         <Link href="/bookings">Бронирование</Link>
         <Link href="/orders">Заказы</Link>
       </nav>
-      {isLoading ? (
-        <span>Загрузка...</span>
-      ) : user ? (
+
+      {user ? (
         <span>Привет, {user.email}</span>
       ) : (
         <>
@@ -23,15 +25,8 @@ export default function Header() {
           <Link href="/signin">signin</Link>
         </>
       )}
-      <Link href="/signup">signup</Link>
-      <Link href="/signin">signin</Link>
-      <button
-        onClick={() => {
-          refreshToken.mutate();
-        }}
-      >
-        refreshToken
-      </button>
+
+      <button onClick={() => refreshToken.mutate()}>refreshToken</button>
     </header>
   );
 }

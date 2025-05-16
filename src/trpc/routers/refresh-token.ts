@@ -8,7 +8,8 @@ export const refreshTokenRouter = router({
   refreshToken: publicProcedure.mutation(async ({ ctx }) => {
     const cookieStore = await cookies();
     const refreshToken = cookieStore.get("refreshToken")?.value;
-
+    console.log("refreshToken", cookieStore);
+    console.log("refreshToken", refreshToken);
     if (!refreshToken) {
       throw new TRPCError({
         code: "UNAUTHORIZED",

@@ -10,7 +10,10 @@ import { redis } from "@/lib/redis"; // Импортируем наш ioredis к
 export const authRouter = router({
   getCurrentUser: publicProcedure.query(({ ctx }) => {
     if (!ctx.user) {
-      throw new TRPCError({ code: "UNAUTHORIZED" });
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "Пользователь не авторизован. Пожалуйста, войдите в систему.",
+      });
     }
     return ctx.user;
   }),
