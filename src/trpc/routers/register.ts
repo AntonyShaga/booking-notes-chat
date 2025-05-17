@@ -7,7 +7,7 @@ import { cookies } from "next/headers";
 import { randomUUID } from "node:crypto";
 import { resend } from "@/lib/resend";
 import { addHours } from "date-fns";
-import { redis } from "@/lib/redis"; // Импортируем наш ioredis клиент
+import { redis } from "@/lib/redis";
 
 export const registerRouter = router({
   register: publicProcedure.input(loginSchema).mutation(async ({ input, ctx }) => {
@@ -18,20 +18,16 @@ export const registerRouter = router({
       });
     }
 
-    // Получаем IP для rate-limiting
     const identifier =
       ctx.req.headers.get("x-real-ip") || ctx.req.headers.get("x-forwarded-for") || "local";
 
-    // Rate-limiting на чистом ioredis
     const rateLimitKey = `rate_limit:register:${identifier}`;
     const currentCount = await redis.incr(rateLimitKey);
 
-    // Устанавливаем TTL только при первом запросе
     if (currentCount === 1) {
-      await redis.expire(rateLimitKey, 10); // 10 секунд
+      await redis.expire(rateLimitKey, 10);
     }
 
-    // Проверяем лимит (5 запросов за 10 секунд)
     if (currentCount > 5) {
       const ttl = await redis.ttl(rateLimitKey);
       throw new TRPCError({
@@ -40,7 +36,6 @@ export const registerRouter = router({
       });
     }
 
-    // Проверяем существующего пользователя
     const existingUser = await ctx.prisma.user.findUnique({
       where: { email: input.email },
     });
@@ -53,13 +48,11 @@ export const registerRouter = router({
     }
 
     try {
-      // Хешируем пароль
       const hashedPassword = await argon2.hash(input.password);
       const tokenId = randomUUID();
       const verificationToken = randomUUID();
       const verificationTokenExpires = addHours(new Date(), 24);
 
-      // Удаляем просроченные неподтвержденные пользователи
       await ctx.prisma.user.deleteMany({
         where: {
           email: input.email,
@@ -67,7 +60,6 @@ export const registerRouter = router({
         },
       });
 
-      // Создаем пользователя в транзакции
       const newUser = await ctx.prisma.$transaction(async (tx) => {
         const user = await tx.user.create({
           data: {
@@ -90,7 +82,6 @@ export const registerRouter = router({
         return user;
       });
 
-      // Отправляем email для подтверждения
       try {
         await resend.emails.send({
           from: "no-reply@resend.dev",
@@ -111,7 +102,6 @@ export const registerRouter = router({
         });
       }
 
-      // Генерируем JWT токены
       const jwtSecret = process.env.JWT_SECRET;
       if (!jwtSecret) {
         throw new TRPCError({
@@ -130,7 +120,6 @@ export const registerRouter = router({
         jwt.sign({ ...tokenPayload, isRefresh: true }, jwtSecret, { expiresIn: "7d" }),
       ]);
 
-      // Устанавливаем cookies
       const cookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",

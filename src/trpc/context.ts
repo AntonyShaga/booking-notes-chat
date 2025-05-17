@@ -3,10 +3,9 @@ import { inferAsyncReturnType } from "@trpc/server";
 import { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 import jwt from "jsonwebtoken";
 import { parse } from "cookie";
-// Инициализация Prisma
+
 export const prisma = new PrismaClient();
 
-// Функция для создания контекста
 export const createContext = async (opts: FetchCreateContextFnOptions) => {
   const { req } = opts;
 
@@ -30,10 +29,9 @@ export const createContext = async (opts: FetchCreateContextFnOptions) => {
 
   return {
     prisma,
-    user, // добавили user в контекст!
+    user,
     req,
   };
 };
 
-// Типизация контекста для использования в роутерах
 export type Context = inferAsyncReturnType<typeof createContext>;
