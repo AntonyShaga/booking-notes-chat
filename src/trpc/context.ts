@@ -20,7 +20,7 @@ export const createContext = async (opts: FetchCreateContextFnOptions) => {
       const payload = jwt.verify(token, process.env.JWT_SECRET) as { userId: string };
       user = await prisma.user.findUnique({
         where: { id: payload.userId },
-        select: { id: true, email: true },
+        select: { id: true, email: true, activeRefreshTokens: true },
       });
     } catch (err) {
       console.error("Ошибка верификации токена:", err);

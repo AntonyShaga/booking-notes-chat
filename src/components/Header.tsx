@@ -5,6 +5,7 @@ import { trpc } from "@/utils/trpc";
 export default function Header() {
   const { data: user, isLoading } = trpc.auth.getCurrentUser.useQuery();
   const refreshToken = trpc.refreshToken.refreshToken.useMutation();
+  const logOut = trpc.logout.logout.useMutation();
 
   if (isLoading) return null; // или <HeaderSkeleton />
   console.log(refreshToken);
@@ -27,6 +28,7 @@ export default function Header() {
       )}
 
       <button onClick={() => refreshToken.mutate()}>refreshToken</button>
+      <button onClick={() => logOut.mutate()}>Log Out</button>
     </header>
   );
 }
