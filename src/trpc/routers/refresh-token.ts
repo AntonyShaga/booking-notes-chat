@@ -8,11 +8,10 @@ export const refreshTokenRouter = router({
   refreshToken: publicProcedure.mutation(async ({ ctx }) => {
     const cookieStore = await cookies();
     const refreshToken = cookieStore.get("refreshToken")?.value;
-    console.log("refreshToken", cookieStore);
-    console.log("refreshToken", refreshToken);
+
     if (!refreshToken) {
       throw new TRPCError({
-        code: "UNAUTHORIZED",
+        code: "BAD_REQUEST",
         message: "Refresh token is missing from cookies",
       });
     }
@@ -34,7 +33,7 @@ export const refreshTokenRouter = router({
 
       if (!decoded.isRefresh) {
         throw new TRPCError({
-          code: "UNAUTHORIZED",
+          code: "FORBIDDEN",
           message: "Provided token is not a refresh token",
         });
       }
@@ -46,7 +45,7 @@ export const refreshTokenRouter = router({
 
       if (!user) {
         throw new TRPCError({
-          code: "UNAUTHORIZED",
+          code: "NOT_FOUND",
           message: "User not found",
         });
       }
@@ -102,8 +101,20 @@ export const refreshTokenRouter = router({
 
       return { success: true };
     } catch (error) {
+      if (error instanceof jwt.TokenExpiredError) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Refresh token expired",
+        });
+      } else if (error instanceof jwt.JsonWebTokenError) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Invalid refresh token",
+        });
+      }
+
       throw new TRPCError({
-        code: "UNAUTHORIZED",
+        code: "INTERNAL_SERVER_ERROR",
         message: "Failed to refresh token",
       });
     }
