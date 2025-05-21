@@ -5,7 +5,7 @@ import { loginSchema } from "@/shared/validations/auth";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 import { randomUUID } from "node:crypto";
-import { redis } from "@/lib/redis"; // Импортируем наш ioredis клиент
+import { redis } from "@/lib/redis";
 
 export const authRouter = router({
   getCurrentUser: publicProcedure.query(({ ctx }) => {
