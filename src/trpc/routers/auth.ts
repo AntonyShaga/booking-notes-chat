@@ -112,6 +112,7 @@ export const authRouter = router({
     cookieStore.set("refreshToken", refreshToken, {
       ...cookieOptions,
       maxAge: 60 * 60 * 24 * 7,
+      sameSite: "strict",
       path: "/",
     });
 
@@ -121,6 +122,7 @@ export const authRouter = router({
         data: {
           lastLogin: new Date(),
           updatedAt: new Date(),
+          activeRefreshTokens: { push: tokenId },
         },
       });
     } catch (error) {

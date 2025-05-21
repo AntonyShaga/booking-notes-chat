@@ -31,7 +31,7 @@ export const refreshTokenRouter = router({
         jti?: string;
         isRefresh?: boolean;
       } | null;
-
+      console.log(decoded?.jti);
       // Валидация структуры токена
       if (!decoded?.userId || !decoded.jti || !decoded.isRefresh) {
         throw new TRPCError({
@@ -125,6 +125,7 @@ export const refreshTokenRouter = router({
 
       cookieStore.set("refreshToken", newRefreshToken, {
         ...cookieOptions,
+        sameSite: "strict",
         maxAge: 60 * 60 * 24 * 7,
       });
 
