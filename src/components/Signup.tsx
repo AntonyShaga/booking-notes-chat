@@ -8,7 +8,7 @@ export default function SignUp() {
   const router = useRouter();
   const registerMutation = trpc.register.register.useMutation({
     onSuccess: () => {
-      router.push("/dashboard");
+      router.push("/verify-pending");
     },
   });
 
