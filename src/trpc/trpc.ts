@@ -1,4 +1,4 @@
-import { initTRPC } from "@trpc/server";
+import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { Context } from "./context";
 
@@ -10,3 +10,18 @@ export const router = t.router;
 export const publicProcedure = t.procedure;
 export const middleware = t.middleware;
 export const mergeRouters = t.mergeRouters;
+
+export const protectedProcedure = t.procedure.use(
+  middleware(async ({ ctx, next }) => {
+    if (!ctx.session?.user) {
+      throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
+
+    return next({
+      ctx: {
+        ...ctx,
+        session: ctx.session, // теперь точно не undefined
+      },
+    });
+  })
+);

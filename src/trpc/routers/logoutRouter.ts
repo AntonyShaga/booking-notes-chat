@@ -40,7 +40,7 @@ export const logoutRouter = router({
         where: { id: decoded.userId },
         data: {
           activeRefreshTokens: {
-            set: ctx.user?.activeRefreshTokens?.filter((id) => id !== decoded.jti) ?? [],
+            set: ctx.session?.user?.activeRefreshTokens?.filter((id) => id !== decoded.jti) ?? [],
           },
         },
       });
