@@ -30,7 +30,7 @@ export const createContext = async (opts: FetchCreateContextFnOptions) => {
   return {
     prisma,
     req,
-    session: user ? { user } : null, // 🔥 вот это — ключ
+    session: user ? { user } : null,
   };
 };
 

@@ -1,12 +1,13 @@
-import { publicProcedure, router } from "@/trpc/trpc";
+import { protectedProcedure, router } from "@/trpc/trpc";
 import z from "zod";
 import { TRPCError } from "@trpc/server";
 import { redis } from "@/lib/redis";
 import { randomUUID } from "node:crypto";
 import { addHours } from "date-fns";
 import { resend } from "@/lib/resend";
+
 export const verifyEmailRouter = router({
-  verifyEmail: publicProcedure
+  verifyEmail: protectedProcedure
     .input(z.object({ token: z.string().uuid() }))
     .mutation(async ({ input, ctx }) => {
       const user = await ctx.prisma.user.findFirst({
@@ -43,90 +44,109 @@ export const verifyEmailRouter = router({
         },
       });
 
-      return { message: "Email успешно подтверждён" }; // 6
+      return { message: "Email успешно подтверждён" };
     }),
-  resendVerificationEmail: publicProcedure.mutation(async ({ ctx }) => {
-    // Явная проверка с кастомной ошибкой
-    if (!ctx.user?.email) {
-      // Проверяем и user, и email
-      throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "Требуется авторизация и подтверждённый email",
-      });
-    }
+  resendVerificationEmail: protectedProcedure
+    .output(z.object({ success: z.boolean(), message: z.string() }))
+    .mutation(async ({ ctx }) => {
+      const userId = ctx.session.user.id;
+      const email = ctx.session.user.email;
 
-    // 1. Rate-limiting (3 запроса в час)
-    const rateLimitKey = `rate_limit:resend:${ctx.user.id}`;
-    const currentCount = await redis.incr(rateLimitKey);
+      if (!email) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Email отсутствует в сессии пользователя",
+        });
+      }
 
-    if (currentCount > 3) {
-      const ttl = await redis.ttl(rateLimitKey);
-      throw new TRPCError({
-        code: "TOO_MANY_REQUESTS",
-        message: `Слишком много запросов. Попробуйте через ${ttl} секунд.`,
-      });
-    }
-    await redis.expire(rateLimitKey, 3600); // 1 час TTL
+      // 🛡️ Cooldown (30 секунд между отправками)
+      const cooldownKey = `resend:cooldown:${userId}`;
+      const isOnCooldown = await redis.get(cooldownKey);
 
-    // 2. Проверяем пользователя
-    const user = await ctx.prisma.user.findUnique({
-      where: { id: ctx.user.id },
-      select: { id: true, emailVerified: true, isActive: true },
-    });
+      if (isOnCooldown) {
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: "Пожалуйста, подождите немного перед повторной отправкой письма.",
+        });
+      }
 
-    if (!user) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "Пользователь с таким email не найден",
-      });
-    }
+      // Устанавливаем cooldown (TTL 30 сек)
+      await redis.set(cooldownKey, "1", "EX", 30);
 
-    if (user.emailVerified) {
-      return { success: true, message: "Email уже подтверждён" };
-    }
+      // 🧪 Rate-limiting (3 письма в час)
+      const rateLimitKey = `rate_limit:resend:${userId}`;
+      const currentCount = await redis.incr(rateLimitKey);
+      if (currentCount > 3) {
+        const ttl = await redis.ttl(rateLimitKey);
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: `Слишком много запросов. Попробуйте через ${ttl} секунд.`,
+        });
+      }
+      await redis.expire(rateLimitKey, 3600); // 1 час TTL
 
-    if (!user.isActive) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "Учётная запись деактивирована",
-      });
-    }
-
-    // 3. Генерируем новый токен
-    const newToken = randomUUID();
-    const expiresAt = addHours(new Date(), 24);
-
-    // 4. Обновляем запись в БД
-    await ctx.prisma.user.update({
-      where: { id: user.id },
-      data: {
-        verificationToken: newToken,
-        verificationTokenExpires: expiresAt,
-      },
-    });
-
-    // 5. Отправляем письмо
-    try {
-      await resend.emails.send({
-        from: "no-reply@resend.dev",
-        to: ctx.user.email,
-        subject: "Подтвердите ваш email",
-        html: `
-            <p>Для подтверждения email перейдите по ссылке:</p>
-            <a href="${process.env.NEXT_PUBLIC_APP_URL}/verify?token=${newToken}">
-              Подтвердить Email
-            </a>
-            <p>Ссылка действительна 24 часа.</p>
-          `,
+      // 🔍 Проверяем пользователя
+      const user = await ctx.prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, emailVerified: true, isActive: true },
       });
 
-      return { success: true, message: "Письмо отправлено!" };
-    } catch (error) {
-      console.error("Ошибка отправки:", error);
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Не удалось отправить письмо",
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Пользователь с таким email не найден",
+        });
+      }
+
+      if (user.emailVerified) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Email уже подтверждён. Письмо не будет отправлено повторно.",
+        });
+      }
+
+      if (!user.isActive) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Учётная запись деактивирована",
+        });
+      }
+
+      // ✉️ Генерация токена и отправка письма
+      const newToken = randomUUID();
+      const expiresAt = addHours(new Date(), 24);
+
+      await ctx.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          verificationToken: newToken,
+          verificationTokenExpires: expiresAt,
+        },
       });
-    }
-  }),
+
+      try {
+        await resend.emails.send({
+          from: "no-reply@resend.dev",
+          to: email,
+          subject: "Подтвердите ваш email",
+          html: `
+        <p>Для подтверждения email перейдите по ссылке:</p>
+        <a href="${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${newToken}">
+          Подтвердить Email
+        </a>
+        <p>Ссылка действительна 24 часа.</p>
+      `,
+        });
+
+        console.log(`[VERIFY_EMAIL] Письмо отправлено: ${email}`);
+
+        return { success: true, message: "Письмо отправлено!" };
+      } catch (error) {
+        console.error("[VERIFY_EMAIL] Ошибка отправки:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Не удалось отправить письмо",
+        });
+      }
+    }),
 });

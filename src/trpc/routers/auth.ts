@@ -9,13 +9,13 @@ import { redis } from "@/lib/redis";
 
 export const authRouter = router({
   getCurrentUser: publicProcedure.query(({ ctx }) => {
-    if (!ctx.user) {
+    if (!ctx.session?.user) {
       throw new TRPCError({
         code: "UNAUTHORIZED",
         message: "Пользователь не авторизован. Пожалуйста, войдите в систему.",
       });
     }
-    return ctx.user;
+    return ctx.session.user;
   }),
   login: publicProcedure.input(loginSchema).mutation(async ({ input, ctx }) => {
     const user = await ctx.prisma.user.findUnique({

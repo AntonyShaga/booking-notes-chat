@@ -89,7 +89,7 @@ export const registerRouter = router({
           subject: "Подтверждение почты",
           html: `
             <p>Здравствуйте! Подтвердите свою почту, перейдя по ссылке:</p>
-            <a href="${process.env.NEXT_PUBLIC_APP_URL}/verify?token=${verificationToken}">
+            <a href="${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${verificationToken}">
               Подтвердить Email
             </a>`,
         });
