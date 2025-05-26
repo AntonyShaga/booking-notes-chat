@@ -4,16 +4,28 @@ import { jwtDecode } from "jwt-decode";
 import jwt from "jsonwebtoken";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
-import { randomUUID } from "crypto";
+import { randomUUID, randomBytes, createHash } from "crypto";
 
 export async function GET(req: NextRequest) {
   try {
     const code = req.nextUrl.searchParams.get("code");
+    const state = req.nextUrl.searchParams.get("state");
+
+    // Получаем сохраненные state и code_verifier из cookies
+    const cookieState = req.cookies.get("oauth_state")?.value;
+    const codeVerifier = req.cookies.get("code_verifier")?.value;
+
+    // Проверяем обязательные параметры
     if (!code) {
       return NextResponse.json({ error: "Authorization code is required" }, { status: 400 });
     }
 
-    // Обмен code на токены
+    // Валидация state для защиты от CSRF
+    if (!state || !cookieState || state !== cookieState) {
+      return NextResponse.json({ error: "Invalid state parameter" }, { status: 400 });
+    }
+
+    // Обмен code на токены с использованием PKCE
     const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -23,6 +35,7 @@ export async function GET(req: NextRequest) {
         client_secret: process.env.GOOGLE_CLIENT_SECRET!,
         redirect_uri: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/google/callback`,
         grant_type: "authorization_code",
+        code_verifier: codeVerifier!, // Добавляем code_verifier для PKCE
       }),
     });
 
@@ -38,20 +51,30 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "No ID token received from Google" }, { status: 400 });
     }
 
-    const {
-      email,
-      name,
-      picture,
-      sub: googleId,
-    } = jwtDecode<{
+    // Декодируем и валидируем ID токен
+    const decodedToken = jwtDecode<{
       email: string;
       name: string;
       picture?: string;
       sub: string;
+      aud: string;
+      iss: string;
     }>(idToken);
 
+    const { email, name, picture, sub: googleId, aud, iss } = decodedToken;
+
+    // Проверяем обязательные поля
     if (!email || !name || !googleId) {
       return NextResponse.json({ error: "Incomplete user data from Google" }, { status: 400 });
+    }
+
+    // Валидация аудитории и издателя токена
+    if (aud !== process.env.GOOGLE_CLIENT_ID) {
+      return NextResponse.json({ error: "Invalid token audience" }, { status: 400 });
+    }
+
+    if (iss !== "https://accounts.google.com" && iss !== "accounts.google.com") {
+      return NextResponse.json({ error: "Invalid token issuer" }, { status: 400 });
     }
 
     // Создание/обновление пользователя
@@ -60,7 +83,7 @@ export async function GET(req: NextRequest) {
       update: {
         googleId,
         emailVerified: true,
-        picture: picture || undefined, // Обновляем аватар, только если он есть
+        picture: picture || undefined,
       },
       create: {
         email,
@@ -81,11 +104,14 @@ export async function GET(req: NextRequest) {
       jwt.sign({ userId: user.id, jti: tokenId, isRefresh: true }, jwtSecret, { expiresIn: "7d" }),
     ]);
 
-    // Сохраняем refreshToken ID в базе
+    // Сохраняем refreshToken ID в базе (ограничиваем количество активных токенов)
     await prisma.user.update({
       where: { id: user.id },
       data: {
-        activeRefreshTokens: { push: tokenId },
+        activeRefreshTokens: {
+          // Оставляем только 5 последних refresh токенов
+          set: [...(user.activeRefreshTokens || []).slice(-4), tokenId],
+        },
       },
     });
 
@@ -95,7 +121,7 @@ export async function GET(req: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       path: "/",
-      sameSite: "strict" as const,
+      sameSite: "lax" as const, // Изменено на lax для лучшей совместимости
     };
 
     cookieStore.set("token", accessToken, {
@@ -106,13 +132,20 @@ export async function GET(req: NextRequest) {
     cookieStore.set("refreshToken", refreshToken, {
       ...cookieOptions,
       maxAge: 60 * 60 * 24 * 7, // 7 дней
-      path: "/",
     });
 
     // Редирект на главную с security headers
     const response = NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}`);
+
+    // Очищаем временные cookies
+    response.cookies.delete("oauth_state");
+    response.cookies.delete("code_verifier");
+
+    // Устанавливаем security headers
     response.headers.set("X-Frame-Options", "DENY");
     response.headers.set("X-Content-Type-Options", "nosniff");
+    response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+
     return response;
   } catch (error) {
     console.error("Google authentication error:", error);
@@ -121,6 +154,11 @@ export async function GET(req: NextRequest) {
     const redirectUrl = new URL(`${process.env.NEXT_PUBLIC_APP_URL}/login`);
     redirectUrl.searchParams.set("error", "google_auth_failed");
 
-    return NextResponse.redirect(redirectUrl);
+    const response = NextResponse.redirect(redirectUrl);
+    // Очищаем временные cookies в случае ошибки
+    response.cookies.delete("oauth_state");
+    response.cookies.delete("code_verifier");
+
+    return response;
   }
 }
