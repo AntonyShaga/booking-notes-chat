@@ -3,10 +3,18 @@
 import { useState, useEffect } from "react";
 import { trpc } from "@/utils/trpc";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function VerifyPending() {
+  const router = useRouter();
   const [lastSentAt, setLastSentAt] = useState<number | null>(null);
   const [cooldownLeft, setCooldownLeft] = useState(0);
+
+  // Добавляем запрос для проверки статуса email
+  const { data: emailStatus, refetch: refetchEmailStatus } =
+    trpc.getEmailStatus.getEmailStatus.useQuery(undefined, {
+      refetchInterval: 5000, // Проверяем каждые 5 секунд
+    });
 
   const { mutate: resend, isLoading } = trpc.verifyEmail.resendVerificationEmail.useMutation({
     onSuccess: (data) => {
@@ -19,6 +27,14 @@ export default function VerifyPending() {
   });
 
   const refreshToken = trpc.refreshToken.refreshToken.useMutation();
+
+  // Если email верифицирован, перенаправляем пользователя
+  useEffect(() => {
+    if (emailStatus?.verified) {
+      toast.success("Email успешно подтвержден!");
+      router.push("/"); // или на другую страницу
+    }
+  }, [emailStatus, router]);
 
   // Обновляем оставшийся кулдаун каждую секунду
   useEffect(() => {
@@ -42,6 +58,8 @@ export default function VerifyPending() {
     refreshToken.mutate(undefined, {
       onSuccess: () => {
         resend();
+        // После повторной отправки обновляем статус email
+        refetchEmailStatus();
       },
       onError: (err) => {
         toast.error(err.message);
