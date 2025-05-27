@@ -4,6 +4,7 @@ import Link from "next/link";
 import { trpc } from "@/utils/trpc";
 import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
+import { Github } from "lucide-react";
 export default function SignUp() {
   const router = useRouter();
   const registerMutation = trpc.register.register.useMutation({
@@ -18,6 +19,9 @@ export default function SignUp() {
   const handleGoogleLogin = () => {
     window.location.href = "/api/auth/google";
   };
+  const handleGitleLogin = () => {
+    window.location.href = "/api/auth/github";
+  };
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md w-full max-w-md">
@@ -27,6 +31,13 @@ export default function SignUp() {
         >
           <FcGoogle size={24} />
           Войти через Google
+        </button>
+        <button
+          onClick={handleGitleLogin}
+          className="flex items-center gap-3 bg-white text-black border border-gray-300 px-6 py-3 rounded-xl shadow hover:shadow-md transition-all"
+        >
+          <Github size={24} />
+          Войти через Git
         </button>
         <AuthForm mode="Signup" onSubmit={handleSignup} />
 

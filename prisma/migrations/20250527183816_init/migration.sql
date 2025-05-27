@@ -6,6 +6,7 @@ CREATE TABLE "users" (
     "name" TEXT,
     "picture" TEXT,
     "googleId" TEXT,
+    "githubId" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
     "last_login" TIMESTAMP(3),
@@ -23,6 +24,9 @@ CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "users_googleId_key" ON "users"("googleId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "users_githubId_key" ON "users"("githubId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "users_verificationToken_key" ON "users"("verificationToken");
