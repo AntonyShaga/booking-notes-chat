@@ -11,7 +11,7 @@ export default function Header() {
   console.log(refreshToken);
   console.log(user);
   return (
-    <header className={"flex gap-2"}>
+    <header className={"flex gap-2 container mx-auto justify-center"}>
       <nav className="space-x-6 hidden md:flex">
         <Link href="/">Главная</Link>
         <Link href="/bookings">Бронирование</Link>

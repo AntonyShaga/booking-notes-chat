@@ -1,5 +1,10 @@
 import VerifyClient from "@/components/VerifyClient";
+import { Suspense } from "react";
 
 export default function VerifyPage() {
-  return <VerifyClient />;
+  return (
+    <Suspense>
+      <VerifyClient />;
+    </Suspense>
+  );
 }
