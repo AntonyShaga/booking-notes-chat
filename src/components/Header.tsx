@@ -29,6 +29,9 @@ export default function Header() {
 
       <button onClick={() => refreshToken.mutate()}>refreshToken</button>
       <button onClick={() => logOut.mutate()}>Log Out</button>
+      <div>
+        <button className={"w-5 h-5 bg-neutral-900"}></button>
+      </div>
     </header>
   );
 }
