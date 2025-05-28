@@ -1,11 +1,9 @@
-import { PrismaClient } from "@prisma/client";
 import { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 import { inferAsyncReturnType } from "@trpc/server";
 import { parse } from "cookie";
 import jwt from "jsonwebtoken";
 import { tryRefreshToken } from "@/lib/auth/refreshToken";
-
-const prisma = new PrismaClient();
+import prisma from "@/lib/db";
 
 export const createContext = async (opts: FetchCreateContextFnOptions) => {
   const { req, resHeaders } = opts;

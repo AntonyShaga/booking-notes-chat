@@ -1,11 +1,16 @@
 "use client";
 import Link from "next/link";
 import { trpc } from "@/utils/trpc";
+import { toast } from "sonner";
 
 export default function Header() {
   const { data: user, isLoading } = trpc.auth.getCurrentUser.useQuery();
   const refreshToken = trpc.refreshToken.refreshToken.useMutation();
-  const logOut = trpc.logout.logout.useMutation();
+  const logOut = trpc.logout.logout.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.message);
+    },
+  });
 
   if (isLoading) return null; // или <HeaderSkeleton />
   console.log(refreshToken);
