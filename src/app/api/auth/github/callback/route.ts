@@ -1,9 +1,9 @@
-// /api/auth/github/callback.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { randomUUID } from "crypto";
-import { cookies } from "next/headers";
-import jwt from "jsonwebtoken";
+import { generateTokens } from "@/lib/jwt";
+import { setAuthCookies } from "@/lib/auth/cookies";
+import { updateActiveRefreshTokens } from "@/lib/auth/updateRefreshTokens";
+
 interface GitHubEmail {
   email: string;
   primary: boolean;
@@ -91,39 +91,13 @@ export async function GET(req: NextRequest) {
     });
 
     // Генерация JWT токенов
-    const tokenId = randomUUID();
-    const [accessJwt, refreshJwt] = await Promise.all([
-      jwt.sign({ userId: user.id, jti: tokenId }, process.env.JWT_SECRET!, {
-        expiresIn: "15m",
-        algorithm: "HS256",
-      }),
-      jwt.sign({ userId: user.id, jti: tokenId, isRefresh: true }, process.env.JWT_SECRET!, {
-        expiresIn: "7d",
-        algorithm: "HS256",
-      }),
-    ]);
+    const { tokenId, refreshJwt, accessJwt } = await generateTokens(user.id);
 
     // Обновление refresh токенов
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        activeRefreshTokens: {
-          set: [...(user.activeRefreshTokens || []).slice(-4), tokenId],
-        },
-      },
-    });
+    await updateActiveRefreshTokens(user.id, user.activeRefreshTokens, tokenId);
 
     // Работа с куками
-    const cookieStore = await cookies();
-    const cookieOptions = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      sameSite: "lax" as const,
-    };
-
-    cookieStore.set("token", accessJwt, { ...cookieOptions, maxAge: 15 * 60 });
-    cookieStore.set("refreshToken", refreshJwt, { ...cookieOptions, maxAge: 60 * 60 * 24 * 7 });
+    await setAuthCookies(accessJwt, refreshJwt);
 
     // Создаем редирект и чистим временные куки
     const response = NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}`);

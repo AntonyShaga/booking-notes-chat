@@ -1,12 +1,11 @@
 // app/api/auth/google/callback/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { OAuth2Client } from "google-auth-library";
-import jwt from "jsonwebtoken";
 import { prisma } from "@/lib/prisma";
-import { cookies } from "next/headers";
-import { randomUUID } from "crypto";
 import { redis } from "@/lib/redis";
 import { TRPCError } from "@trpc/server";
+import { setAuthCookies } from "@/lib/auth/cookies";
+import { generateTokens } from "@/lib/jwt";
 
 export async function GET(req: NextRequest) {
   try {
@@ -114,13 +113,8 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const jwtSecret = process.env.JWT_SECRET!;
-    const tokenId = randomUUID();
-
-    const [accessToken, refreshToken] = await Promise.all([
-      jwt.sign({ userId: user.id, jti: tokenId }, jwtSecret, { expiresIn: "15m" }),
-      jwt.sign({ userId: user.id, jti: tokenId, isRefresh: true }, jwtSecret, { expiresIn: "7d" }),
-    ]);
+    // Генерация JWT токенов
+    const { tokenId, refreshJwt, accessJwt } = await generateTokens(user.id);
 
     await prisma.user.update({
       where: { id: user.id },
@@ -132,16 +126,7 @@ export async function GET(req: NextRequest) {
     });
 
     // 🍪 Установка куки
-    const cookieStore = await cookies();
-    const cookieOptions = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      sameSite: "lax" as const,
-    };
-
-    cookieStore.set("token", accessToken, { ...cookieOptions, maxAge: 15 * 60 });
-    cookieStore.set("refreshToken", refreshToken, { ...cookieOptions, maxAge: 60 * 60 * 24 * 7 });
+    await setAuthCookies(accessJwt, refreshJwt);
 
     const response = NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}`);
 
