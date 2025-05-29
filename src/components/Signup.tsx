@@ -5,10 +5,12 @@ import { trpc } from "@/utils/trpc";
 import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
 import { Github } from "lucide-react";
+import { toast } from "sonner";
 export default function SignUp() {
   const router = useRouter();
   const registerMutation = trpc.register.register.useMutation({
-    onSuccess: () => {
+    onSuccess: (data) => {
+      toast.success(data.message);
       router.push("/verify-pending");
     },
   });

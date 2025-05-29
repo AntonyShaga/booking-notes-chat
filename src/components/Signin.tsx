@@ -3,12 +3,15 @@ import AuthForm from "@/components/AuthForm";
 import Link from "next/link";
 import { trpc } from "@/utils/trpc";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function SignIn() {
   const router = useRouter();
   const loginMutation = trpc.auth.login.useMutation({
-    onSuccess: () => {
+    onSuccess: (data) => {
+      toast.success(data.message);
       router.push("/dashboard");
+      toast.success(data.message);
     },
   });
 
