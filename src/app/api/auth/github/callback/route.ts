@@ -93,9 +93,13 @@ export async function GET(req: NextRequest) {
     // Генерация JWT токенов
     const tokenId = randomUUID();
     const [accessJwt, refreshJwt] = await Promise.all([
-      jwt.sign({ userId: user.id, jti: tokenId }, process.env.JWT_SECRET!, { expiresIn: "15m" }),
+      jwt.sign({ userId: user.id, jti: tokenId }, process.env.JWT_SECRET!, {
+        expiresIn: "15m",
+        algorithm: "HS256",
+      }),
       jwt.sign({ userId: user.id, jti: tokenId, isRefresh: true }, process.env.JWT_SECRET!, {
         expiresIn: "7d",
+        algorithm: "HS256",
       }),
     ]);
 

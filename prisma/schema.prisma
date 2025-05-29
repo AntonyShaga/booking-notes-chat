@@ -23,6 +23,13 @@ model User {
   verificationToken        String?   @unique
   verificationTokenExpires DateTime?
   activeRefreshTokens      String[]
+  role                     Role      @default(CUSTOMER)
 
   @@map("users")
+}
+
+enum Role {
+  CUSTOMER
+  PROVIDER
+  ADMIN
 }

@@ -1,3 +1,6 @@
+-- CreateEnum
+CREATE TYPE "Role" AS ENUM ('CUSTOMER', 'PROVIDER', 'ADMIN');
+
 -- CreateTable
 CREATE TABLE "users" (
     "id" TEXT NOT NULL,
@@ -15,6 +18,7 @@ CREATE TABLE "users" (
     "verificationToken" TEXT,
     "verificationTokenExpires" TIMESTAMP(3),
     "activeRefreshTokens" TEXT[],
+    "role" "Role" NOT NULL DEFAULT 'CUSTOMER',
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
