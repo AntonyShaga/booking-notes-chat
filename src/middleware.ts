@@ -20,7 +20,6 @@ export default async function middleware(req: NextRequest) {
   }
   try {
     // Проверяем токен
-
     const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
     console.log("secret", secret);
     const { payload } = await jwtVerify(token, secret);
