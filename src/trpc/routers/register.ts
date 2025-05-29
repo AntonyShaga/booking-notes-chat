@@ -116,10 +116,14 @@ export const registerRouter = router({
       };
 
       const [token, refreshToken] = await Promise.all([
-        jwt.sign(tokenPayload, jwtSecret, { expiresIn: "15m" }),
-        jwt.sign({ ...tokenPayload, isRefresh: true }, jwtSecret, { expiresIn: "7d" }),
+        jwt.sign(tokenPayload, jwtSecret, { expiresIn: "15m", algorithm: "HS256" }),
+        jwt.sign({ ...tokenPayload, isRefresh: true }, jwtSecret, {
+          expiresIn: "7d",
+          algorithm: "HS256",
+        }),
       ]);
 
+      // 🍪 Установка куки
       const cookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",

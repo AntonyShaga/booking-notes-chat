@@ -13,7 +13,7 @@ export default function VerifyPending() {
   // Добавляем запрос для проверки статуса email
   const { data: emailStatus, refetch: refetchEmailStatus } =
     trpc.getEmailStatus.getEmailStatus.useQuery(undefined, {
-      refetchInterval: 5000, // Проверяем каждые 5 секунд
+      refetchInterval: 3000, // Проверяем каждые 3 секунд
     });
 
   const { mutate: resend, isLoading } = trpc.verifyEmail.resendVerificationEmail.useMutation({

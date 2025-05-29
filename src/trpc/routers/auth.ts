@@ -6,6 +6,8 @@ import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 import { randomUUID } from "node:crypto";
 import { redis } from "@/lib/redis";
+import { generateTokens } from "@/lib/jwt";
+import { setAuthCookies } from "@/lib/auth/cookies";
 
 export const authRouter = router({
   getCurrentUser: publicProcedure.query(({ ctx }) => {
@@ -85,36 +87,9 @@ export const authRouter = router({
       });
     }
 
-    const tokenId = randomUUID();
-    const tokenPayload = {
-      userId: user.id,
-      jti: tokenId,
-    };
+    const { tokenId, refreshJwt, accessJwt } = await generateTokens(user.id);
 
-    const [token, refreshToken] = await Promise.all([
-      jwt.sign(tokenPayload, jwtSecret, { expiresIn: "15m" }),
-      jwt.sign({ ...tokenPayload, isRefresh: true }, jwtSecret, { expiresIn: "7d" }),
-    ]);
-
-    const cookieOptions = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-    };
-
-    const cookieStore = await cookies();
-    cookieStore.set("token", token, {
-      ...cookieOptions,
-      maxAge: 15 * 60,
-      sameSite: "strict",
-    });
-
-    cookieStore.set("refreshToken", refreshToken, {
-      ...cookieOptions,
-      maxAge: 60 * 60 * 24 * 7,
-      sameSite: "strict",
-      path: "/",
-    });
+    await setAuthCookies(accessJwt, refreshJwt);
 
     try {
       await ctx.prisma.user.update({

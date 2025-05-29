@@ -6,7 +6,12 @@ export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Пропускаем публичные страницы
-  if (pathname === "/" || pathname === "/signin" || pathname === "/signup") {
+  if (
+    pathname === "/" ||
+    pathname === "/signin" ||
+    pathname === "/signup" ||
+    pathname === "/verify-email"
+  ) {
     return NextResponse.next();
   }
 

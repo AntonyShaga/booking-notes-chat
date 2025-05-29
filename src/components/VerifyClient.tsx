@@ -16,7 +16,7 @@ export default function VerifyClient() {
   const verifyMutation = trpc.verifyEmail.verifyEmail.useMutation({
     onSuccess: () => {
       toast.success("Email подтверждён!");
-      router.replace("/dashboard");
+      router.replace("/");
     },
     onError: () => {
       toast.error("Ошибка подтверждения почты");
