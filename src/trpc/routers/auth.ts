@@ -1,10 +1,12 @@
 import argon2 from "argon2";
 import { publicProcedure, router } from "../trpc";
 import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import { loginSchema } from "@/shared/validations/auth";
 import { redis } from "@/lib/redis";
 import { generateTokens } from "@/lib/jwt";
 import { setAuthCookies } from "@/lib/auth/cookies";
+import { authenticator } from "otplib";
 
 export const authRouter = router({
   getCurrentUser: publicProcedure.query(({ ctx }) => {
@@ -16,6 +18,7 @@ export const authRouter = router({
     }
     return ctx.session.user;
   }),
+
   login: publicProcedure.input(loginSchema).mutation(async ({ input, ctx }) => {
     const user = await ctx.prisma.user.findUnique({
       where: { email: input.email },
@@ -23,22 +26,18 @@ export const authRouter = router({
         id: true,
         password: true,
         isActive: true,
+        twoFactorEnabled: true,
       },
     });
-    // Получаем IP для rate-limiting
+
     const identifier =
       ctx.req.headers.get("x-real-ip") || ctx.req.headers.get("x-forwarded-for") || "local";
 
-    // Rate-limiting на чистом ioredis
     const rateLimitKey = `rate_limit:login:${identifier}`;
     const currentCount = await redis.incr(rateLimitKey);
-
-    // Устанавливаем TTL только при первом запросе
     if (currentCount === 1) {
       await redis.expire(rateLimitKey, 10); // 10 секунд
     }
-
-    // Проверяем лимит (5 запросов за 10 секунд)
     if (currentCount > 5) {
       const ttl = await redis.ttl(rateLimitKey);
       throw new TRPCError({
@@ -84,8 +83,13 @@ export const authRouter = router({
       });
     }
 
-    const { tokenId, refreshJwt, accessJwt } = await generateTokens(user.id);
+    if (user.twoFactorEnabled) {
+      const key = `2fa:pending:${user.id}`;
+      await redis.set(key, "1", "EX", 300); // 5 минут
+      return { requires2FA: true, userId: user.id };
+    }
 
+    const { tokenId, refreshJwt, accessJwt } = await generateTokens(user.id);
     await setAuthCookies(accessJwt, refreshJwt);
 
     try {
@@ -100,6 +104,73 @@ export const authRouter = router({
     } catch (error) {
       console.error("Ошибка обновления lastLogin:", error);
     }
+
     return { message: "Вход выполнен успешно", userId: user.id };
   }),
+
+  verify2FAAfterLogin: publicProcedure
+    .input(
+      z.object({
+        userId: z.string().uuid(),
+        code: z.string().length(6),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const redisKey = `2fa:pending:${input.userId}`;
+      const pending = await redis.get(redisKey);
+
+      if (!pending) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Сессия подтверждения 2FA истекла или недействительна",
+        });
+      }
+
+      const user = await ctx.prisma.user.findUnique({
+        where: { id: input.userId },
+        select: {
+          id: true,
+          twoFactorSecret: true,
+          isActive: true,
+        },
+      });
+
+      if (!user || !user.twoFactorSecret) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "2FA не настроена или пользователь не найден",
+        });
+      }
+
+      const isCodeValid = authenticator.check(input.code, user.twoFactorSecret);
+      if (!isCodeValid) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Неверный код 2FA",
+        });
+      }
+
+      await redis.del(redisKey);
+
+      const { tokenId, refreshJwt, accessJwt } = await generateTokens(user.id);
+      await setAuthCookies(accessJwt, refreshJwt);
+
+      try {
+        await ctx.prisma.user.update({
+          where: { id: user.id },
+          data: {
+            lastLogin: new Date(),
+            updatedAt: new Date(),
+            activeRefreshTokens: { push: tokenId },
+          },
+        });
+      } catch (error) {
+        console.error("Ошибка обновления lastLogin:", error);
+      }
+
+      return {
+        message: "2FA подтверждена. Вход выполнен.",
+        userId: user.id,
+      };
+    }),
 });

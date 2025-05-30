@@ -18,7 +18,6 @@ export default function Header() {
   });
 
   if (isLoading) return null; // или <HeaderSkeleton />
-  console.log(refreshToken);
   console.log(user);
   return (
     <header className={"flex gap-2 container mx-auto justify-center "}>
