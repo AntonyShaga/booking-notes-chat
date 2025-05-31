@@ -25,6 +25,7 @@ export default function Header() {
         <Link href="/">Главная</Link>
         <Link href="/bookings">Бронирование</Link>
         <Link href="/orders">Заказы</Link>
+        <Link href="/dashboard">dashboard</Link>
       </nav>
 
       {user ? (

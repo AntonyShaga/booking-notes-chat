@@ -5,6 +5,7 @@ import { verifyEmailRouter } from "@/trpc/routers/verifyEmail";
 import { refreshTokenRouter } from "@/trpc/routers/refresh-token";
 import { logoutRouter } from "@/trpc/routers/logoutRouter";
 import { getEmailStatusRout } from "@/trpc/routers/getEmailStatus";
+import { twoFARouter } from "@/trpc/routers/2fa";
 
 export const appRouter = router({
   auth: authRouter,
@@ -13,6 +14,7 @@ export const appRouter = router({
   refreshToken: refreshTokenRouter,
   logout: logoutRouter,
   getEmailStatus: getEmailStatusRout,
+  twoFA: twoFARouter,
 });
 
 export type AppRouter = typeof appRouter;
