@@ -3,105 +3,89 @@ import { trpc } from "@/utils/trpc";
 import { useState } from "react";
 import { toast } from "sonner";
 
+type TwoFAMethod = "qr" | "manual" | "email";
+
 export default function Enable2FA() {
-  const [method, setMethod] = useState<"qr" | "manual" | "email" | "sms">("qr");
+  const [method, setMethod] = useState<TwoFAMethod>("qr");
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [manualSecret, setManualSecret] = useState<string | null>(null);
   const [code, setCode] = useState<string>("");
 
-  // Запрос на включение 2FA
-  const enableMutation = trpc.twoFA.enable2FA.useMutation({
+  const enable = trpc.twoFA.enable2FA.useMutation({
     onSuccess(data) {
-      setQrCode(data.qrCode ?? null);
-      setManualSecret(data.secret ?? null);
-
-      if (method === "email" || method === "sms") {
-        toast.success(method === "email" ? "Код отправлен на email" : "Код отправлен в SMS");
-      }
+      if (data.qrCode) setQrCode(data.qrCode);
+      if (data.secret) setManualSecret(data.secret);
+      if (data.method === "email") toast.success("Код отправлен на email");
     },
-    onError(error) {
-      toast.error(error.message);
+    onError(err) {
+      toast.error(err.message);
     },
   });
 
-  // Подтверждение кода
-  const confirmMutation = trpc.twoFA.confirm2FASetup.useMutation({
+  const confirm = trpc.twoFA.confirm2FASetup.useMutation({
     onSuccess() {
-      toast.success("2FA успешно включено!");
+      toast.success("2FA включено!");
       setQrCode(null);
       setManualSecret(null);
       setCode("");
     },
-    onError(error) {
-      toast.error(error.message);
+    onError(err) {
+      toast.error(err.message);
     },
   });
 
-  const handleEnable = () => {
-    enableMutation.mutate({ method });
-  };
-
-  const handleConfirm = () => {
-    confirmMutation.mutate({ code });
-  };
-
   return (
     <div className="p-4 max-w-md mx-auto">
-      <h2 className="text-xl font-bold mb-4">Включение двухфакторной аутентификации</h2>
+      <h2 className="text-xl font-bold mb-4">Включить 2FA</h2>
 
-      {/* Выбор метода */}
       <select
+        className="w-full border rounded p-2 mb-4"
         value={method}
-        onChange={(e) => setMethod(e.target.value as any)}
-        className="border p-2 rounded mb-4 w-full"
+        onChange={(e) => setMethod(e.target.value as TwoFAMethod)}
       >
-        <option value="qr">QR-код (рекомендуется)</option>
-        <option value="manual">Ручной ввод секрета</option>
-        <option value="email">Код на email</option>
-        <option value="sms">Код в SMS</option>
+        <option value="qr">QR-код</option>
+        <option value="manual">Ручной ввод</option>
+        <option value="email">Код на Email</option>
       </select>
 
       <button
-        onClick={handleEnable}
-        disabled={enableMutation.isLoading}
-        className="px-4 py-2 bg-blue-600 text-white rounded w-full"
+        onClick={() => enable.mutate({ method })}
+        className="w-full bg-blue-600 text-white py-2 rounded"
+        disabled={enable.isLoading}
       >
-        {enableMutation.isLoading ? "Генерация..." : "Получить код"}
+        {enable.isLoading ? "Отправка..." : "Получить код"}
       </button>
 
-      {/* QR или manual secret */}
       {qrCode && (
         <div className="mt-4">
-          <p className="mb-2">Отсканируй QR-код в Google Authenticator:</p>
+          <p>Сканируй в Google Authenticator:</p>
           <img src={qrCode} alt="QR Code" className="w-48 h-48" />
         </div>
       )}
+
       {manualSecret && (
         <div className="mt-4">
-          <p className="mb-2">Введи этот секрет вручную:</p>
-          <code className="bg-gray-100 p-2 rounded inline-block font-mono">{manualSecret}</code>
+          <p>Секрет для ручного ввода:</p>
+          <code className="bg-gray-200 p-2 block rounded">{manualSecret}</code>
         </div>
       )}
 
-      {/* Подтверждение кода */}
-      {(qrCode || manualSecret || method === "email" || method === "sms") && (
+      {(qrCode || manualSecret || method === "email") && (
         <div className="mt-6">
-          <label className="block mb-1 font-medium">Введите 6-значный код</label>
           <input
             type="text"
             value={code}
             onChange={(e) => setCode(e.target.value)}
+            placeholder="6-значный код"
             maxLength={6}
-            placeholder="Напр. 123456"
-            className="border p-2 rounded w-full"
+            className="w-full border rounded p-2 mb-2"
           />
-
           <button
-            onClick={handleConfirm}
-            disabled={confirmMutation.isLoading || code.length !== 6}
-            className="mt-3 px-4 py-2 bg-green-600 text-white rounded w-full"
+            onClick={() => confirm.mutate({ code })}
+            disabled={confirm.isLoading || code.length !== 6}
+            className="w-full bg-green-600 text-white py-2 rounded"
           >
-            {confirmMutation.isLoading ? "Проверка..." : "Подтвердить"}
+            {confirm.isLoading ? "Проверка..." : "Подтвердить"}
           </button>
         </div>
       )}

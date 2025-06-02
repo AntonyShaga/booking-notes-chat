@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import { tryRefreshToken } from "@/lib/auth/refreshToken";
 import prisma from "@/lib/db";
 import { sendEmail } from "@/lib/sendEmail";
+import { redis } from "@/lib/redis";
 
 export const createContext = async (opts: FetchCreateContextFnOptions) => {
   const { req, resHeaders } = opts;
@@ -73,6 +74,7 @@ export const createContext = async (opts: FetchCreateContextFnOptions) => {
     resHeaders,
     session: user ? { user } : null,
     sendEmail,
+    redis,
   };
 };
 
