@@ -1,12 +1,16 @@
 "use client";
 import { trpc } from "@/utils/trpc";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export default function Page() {
   const [qrCode, setQrCode] = useState<string | null>(null);
   const { mutate, isLoading, error } = trpc.twoFA.enable2FA.useMutation({
     onSuccess(data) {
       setQrCode(data.qrCode);
+    },
+    onError(error) {
+      toast.error(error.message);
     },
   });
   console.log("sdfsd");

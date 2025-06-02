@@ -5,20 +5,81 @@ import qrcode from "qrcode";
 import { z } from "zod";
 
 export const twoFARouter = router({
-  enable2FA: protectedProcedure.mutation(async ({ ctx }) => {
-    const userId = ctx.session.user.id;
+  enable2FA: protectedProcedure
+    .input(
+      z.object({
+        method: z.enum(["qr", "manual", "email", "sms"]),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const userId = ctx.session.user.id;
+      const email = ctx.session.user.email;
+      const secret = authenticator.generateSecret();
 
-    const secret = authenticator.generateSecret();
-    const otpauth = authenticator.keyuri(ctx.session.user.email, "MyApp", secret);
-    const qrCode = await qrcode.toDataURL(otpauth);
+      // Сохраняем секрет независимо от метода
+      await ctx.prisma.user.update({
+        where: { id: userId },
+        data: { twoFactorSecret: secret, twoFactorEnabled: false },
+      });
 
-    await ctx.prisma.user.update({
-      where: { id: userId },
-      data: { twoFactorSecret: secret },
-    });
+      // Формируем otpauth ссылку
+      const otpauth = authenticator.keyuri(email, "MyApp", secret);
 
-    return { qrCode };
-  }),
+      switch (input.method) {
+        case "qr": {
+          const qrCode = await qrcode.toDataURL(otpauth);
+          return {
+            method: "qr",
+            qrCode,
+          };
+        }
+
+        case "manual": {
+          return {
+            method: "manual",
+            secret,
+          };
+        }
+
+        case "email": {
+          const token = authenticator.generate(secret); // 6-значный код
+          // тут можно подключить Resend/SendGrid/etc
+          await ctx.sendEmail({
+            to: email,
+            subject: "Ваш код подтверждения 2FA",
+            html: `<p>Ваш код: <b>${token}</b></p>`,
+          });
+
+          return {
+            method: "email",
+            message: "Код отправлен на вашу почту.",
+          };
+        }
+
+        case "sms": {
+          const phone = ctx.session.user.phone;
+          if (!phone) {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "Телефон не указан." });
+          }
+
+          const token = authenticator.generate(secret);
+          // тут можно подключить Twilio/SMSClub/etc
+          await ctx.sendSMS({
+            to: phone,
+            body: `Ваш код подтверждения: ${token}`,
+          });
+
+          return {
+            method: "sms",
+            message: "Код отправлен по SMS.",
+          };
+        }
+
+        default:
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Неверный метод." });
+      }
+    }),
+
   confirm2FASetup: protectedProcedure
     .input(z.object({ code: z.string().min(6).max(6) }))
     .mutation(async ({ input, ctx }) => {
