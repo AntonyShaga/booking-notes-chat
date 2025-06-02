@@ -56,7 +56,7 @@ export const twoFARouter = router({
           };
         }
 
-        case "sms": {
+        /*case "sms": {
           const phone = ctx.session.user.phone;
           if (!phone) {
             throw new TRPCError({ code: "BAD_REQUEST", message: "Телефон не указан." });
@@ -74,7 +74,7 @@ export const twoFARouter = router({
             message: "Код отправлен по SMS.",
           };
         }
-
+*/
         default:
           throw new TRPCError({ code: "BAD_REQUEST", message: "Неверный метод." });
       }
