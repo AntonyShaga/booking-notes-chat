@@ -1,20 +1,22 @@
 import { protectedProcedure, router } from "../trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { authenticator } from "otplib";
-import qrcode from "qrcode";
+import { generateOTPSecret, generateQRCode } from "@/lib/2fa/generate";
+import { redisKeys } from "@/lib/2fa/redis";
+import { checkRateLimit } from "@/lib/2fa/helpers";
+import { startEmail2FA, verifyEmail2FA } from "@/lib/2fa/email";
+import { validateOTPCode } from "@/lib/2fa/validate";
 
 export const twoFARouter = router({
   enable2FA: protectedProcedure
-    .input(
-      z.object({
-        method: z.enum(["qr", "manual", "email"]),
-      })
-    )
+    .input(z.object({ method: z.enum(["qr", "manual", "email"]) }))
     .mutation(async ({ ctx, input }) => {
       const { method } = input;
       const { user } = ctx.session;
-      const redisKey = `2fa:${user.id}`;
+
+      const attemptsKey = redisKeys.attempts(user.id);
+
+      await checkRateLimit(ctx.redis, attemptsKey);
 
       const currentUser = await ctx.prisma.user.findUnique({
         where: { id: user.id },
@@ -28,54 +30,34 @@ export const twoFARouter = router({
         });
       }
 
-      // Очистка предыдущих данных
-      await ctx.redis.del(redisKey);
+      // Очистка прошлых данных
+      await ctx.redis.del(attemptsKey);
       await ctx.prisma.user.update({
         where: { id: user.id },
         data: { twoFactorSecret: null, twoFactorEnabled: false },
       });
 
       if (method === "qr" || method === "manual") {
-        const secret = authenticator.generateSecret();
-        const otpauth = authenticator.keyuri(user.email, "YourApp", secret);
+        const secret = generateOTPSecret();
+        const { qrCode } = await generateQRCode(user.email, "YourApp", secret);
 
         await ctx.prisma.user.update({
           where: { id: user.id },
           data: { twoFactorSecret: secret },
         });
 
-        if (method === "qr") {
-          const qrCode = await qrcode.toDataURL(otpauth);
-          return { method, qrCode };
-        }
-
-        return { method, secret };
+        return method === "qr" ? { method, qrCode } : { method, secret };
       }
 
       if (method === "email") {
-        const secret = authenticator.generateSecret();
-        const token = authenticator.generate(secret);
-
-        await ctx.redis.hset(redisKey, {
-          method,
-          token,
-          secret, // Сохраняем секрет для последующей проверки
+        return await startEmail2FA({
+          redis: ctx.redis,
+          user,
+          sendEmail: ctx.sendEmail,
         });
-        await ctx.redis.expire(redisKey, 300);
-
-        await ctx.sendEmail({
-          to: user.email,
-          subject: "Ваш код для 2FA",
-          html: `Ваш код подтверждения: ${token}`,
-        });
-
-        return { method };
       }
 
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "Неверный метод 2FA",
-      });
+      throw new TRPCError({ code: "BAD_REQUEST", message: "Неверный метод 2FA" });
     }),
 
   confirm2FASetup: protectedProcedure
@@ -88,7 +70,6 @@ export const twoFARouter = router({
     .mutation(async ({ ctx, input }) => {
       const { code, method } = input;
       const { user } = ctx.session;
-      const redisKey = `2fa:${user.id}`;
 
       const userData = await ctx.prisma.user.findUnique({
         where: { id: user.id },
@@ -96,6 +77,13 @@ export const twoFARouter = router({
 
       if (!userData) {
         throw new TRPCError({ code: "UNAUTHORIZED" });
+      }
+
+      if (userData.twoFactorEnabled) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "2FA уже включена",
+        });
       }
 
       if (method === "qr" || method === "manual") {
@@ -106,11 +94,7 @@ export const twoFARouter = router({
           });
         }
 
-        const isValid = authenticator.verify({
-          token: code,
-          secret: userData.twoFactorSecret,
-        });
-
+        const isValid = validateOTPCode(code, userData.twoFactorSecret);
         if (!isValid) {
           throw new TRPCError({
             code: "BAD_REQUEST",
@@ -127,45 +111,29 @@ export const twoFARouter = router({
       }
 
       if (method === "email") {
-        const redisData = await ctx.redis.hgetall(redisKey);
-
-        if (!redisData?.token || redisData.method !== "email") {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Сначала запросите код по email",
-          });
-        }
-
-        if (redisData.token !== code) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Неверный код подтверждения",
-          });
-        }
+        const result = await verifyEmail2FA({
+          redis: ctx.redis,
+          userId: user.id,
+          code,
+        });
 
         await ctx.prisma.user.update({
           where: { id: user.id },
           data: {
             twoFactorEnabled: true,
-            twoFactorSecret: redisData.secret,
+            twoFactorSecret: result.secret,
           },
         });
-
-        await ctx.redis.del(redisKey);
 
         return { success: true };
       }
 
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "Неверный метод подтверждения",
-      });
+      throw new TRPCError({ code: "BAD_REQUEST", message: "Неверный метод подтверждения" });
     }),
-  disable2FA: protectedProcedure.mutation(async ({ ctx }) => {
-    const { user } = ctx.session;
 
+  disable2FA: protectedProcedure.mutation(async ({ ctx }) => {
     await ctx.prisma.user.update({
-      where: { id: user.id },
+      where: { id: ctx.session.user.id },
       data: {
         twoFactorEnabled: false,
         twoFactorSecret: null,
@@ -174,12 +142,11 @@ export const twoFARouter = router({
 
     return { success: true };
   }),
+
   get2FAStatus: protectedProcedure.query(async ({ ctx }) => {
     const user = await ctx.prisma.user.findUnique({
       where: { id: ctx.session.user.id },
-      select: {
-        twoFactorEnabled: true,
-      },
+      select: { twoFactorEnabled: true },
     });
 
     return { isEnabled: user?.twoFactorEnabled ?? false };

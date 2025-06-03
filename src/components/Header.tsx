@@ -9,7 +9,6 @@ import SideMenu from "@/components/SideMenu";
 export default function Header() {
   const [open, setOpen] = useState(false);
   const { data: user, isLoading } = trpc.auth.getCurrentUser.useQuery();
-  const refreshToken = trpc.refreshToken.refreshToken.useMutation();
   const logOut = trpc.logout.logout.useMutation({
     onSuccess: (data) => {
       toast.success(data.message);
@@ -37,7 +36,6 @@ export default function Header() {
         </>
       )}
 
-      <button onClick={() => refreshToken.mutate()}>refreshToken</button>
       <button onClick={() => logOut.mutate()}>Log Out</button>
       {user && (
         <div>

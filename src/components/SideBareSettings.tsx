@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function SideBareSettings() {
   return (
     <div className={"px-8"}>
-      <ul>
+      <ul className={"flex justify-center"}>
         <li>
           <Link href={"/settings"}>security</Link>
         </li>
