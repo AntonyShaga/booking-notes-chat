@@ -5,7 +5,7 @@ type Props = {
   open: () => void;
 };
 
-export default function Sidebar({ open }: Props) {
+export default function SideMenu({ open }: Props) {
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => {

@@ -2,9 +2,9 @@
 import Link from "next/link";
 import { trpc } from "@/utils/trpc";
 import { toast } from "sonner";
-import Sidebar from "./Sidebar";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import SideMenu from "@/components/SideMenu";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
@@ -56,7 +56,7 @@ export default function Header() {
                 exit={{ x: "100%" }}
                 transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }}
               >
-                <Sidebar open={() => setOpen((prev) => !prev)} />
+                <SideMenu open={() => setOpen((prev) => !prev)} />
               </motion.div>
             )}
           </AnimatePresence>
