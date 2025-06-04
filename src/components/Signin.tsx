@@ -9,9 +9,16 @@ export default function SignIn() {
   const router = useRouter();
   const loginMutation = trpc.auth.login.useMutation({
     onSuccess: (data) => {
-      toast.success(data.message);
+      if (data.requires2FA) {
+        sessionStorage.setItem("2fa_user_id", data.userId);
+        router.push("/2fa");
+        toast.success("sd");
+        return;
+      }
       router.push("/dashboard");
-      toast.success(data.message);
+    },
+    onError: (error) => {
+      toast.error(error.message);
     },
   });
 

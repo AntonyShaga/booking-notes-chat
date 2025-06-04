@@ -10,7 +10,8 @@ export default async function middleware(req: NextRequest) {
     pathname === "/" ||
     pathname === "/signin" ||
     pathname === "/signup" ||
-    pathname === "/verify-email"
+    pathname === "/verify-email" ||
+    pathname === "/2fa"
   ) {
     return NextResponse.next();
   }
