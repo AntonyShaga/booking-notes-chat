@@ -10,6 +10,13 @@ import { validateOTPCode } from "@/lib/2fa/validate";
 export const twoFARouter = router({
   enable2FA: protectedProcedure
     .input(z.object({ method: z.enum(["qr", "manual", "email"]) }))
+    .output(
+      z.union([
+        z.object({ method: z.literal("qr"), qrCode: z.string() }),
+        z.object({ method: z.literal("manual"), secret: z.string() }),
+        z.object({ method: z.literal("email") }),
+      ])
+    )
     .mutation(async ({ ctx, input }) => {
       const { method } = input;
       const { user } = ctx.session;
@@ -50,11 +57,12 @@ export const twoFARouter = router({
       }
 
       if (method === "email") {
-        return await startEmail2FA({
+        await startEmail2FA({
           redis: ctx.redis,
           user,
           sendEmail: ctx.sendEmail,
         });
+        return { method: "email" };
       }
 
       throw new TRPCError({ code: "BAD_REQUEST", message: "Неверный метод 2FA" });
