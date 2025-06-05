@@ -36,6 +36,8 @@ export async function startEmail2FA({
   const token = await generateEmailToken(secret);
 
   await redis.hset(pendingKey, { method: "email", token, secret });
+  const test = await redis.hgetall(pendingKey);
+  console.log(">>> ПРОВЕРКА Redis после hset:", test);
   await redis.expire(pendingKey, CODE_TTL_SECONDS);
 
   await redis.setex(cooldownKey, COOLDOWN_SECONDS, "1");
@@ -59,8 +61,10 @@ export async function verifyEmail2FA({
   code: string;
 }): Promise<{ success: true; secret: string }> {
   const pendingKey = redisKeys.pending(userId);
+  console.log(">>> REDIS pendingKey:", pendingKey);
   const data = await redis.hgetall(pendingKey);
 
+  console.log(">>> Верификация 2FA. Данные из Redis:", data);
   if (!data?.token || data.method !== "email") {
     throw new TRPCError({
       code: "BAD_REQUEST",

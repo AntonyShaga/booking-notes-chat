@@ -7,6 +7,8 @@ import { redis } from "@/lib/redis";
 import { generateTokens } from "@/lib/jwt";
 import { setAuthCookies } from "@/lib/auth/cookies";
 import { authenticator } from "otplib";
+import { redisKeys } from "@/lib/2fa/redis";
+import { verifyEmail2FA } from "@/lib/2fa/email";
 
 export const authRouter = router({
   getCurrentUser: publicProcedure.query(({ ctx }) => {
@@ -84,8 +86,8 @@ export const authRouter = router({
     }
 
     if (user.twoFactorEnabled) {
-      const key = `2fa:pending:${user.id}`;
-      await redis.set(key, "1", "EX", 300); // 5 минут
+      //const key = `2fa:pending:${user.id}`;
+      await ctx.redis.set(`2fa:status:${user.id}`, "waiting", "EX", 300); // 5 минут
       return { requires2FA: true, userId: user.id };
     }
 
@@ -113,12 +115,23 @@ export const authRouter = router({
       z.object({
         userId: z.string().uuid(),
         code: z.string().length(6),
+        method: z.enum(["qr", "manual", "email"]),
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const redisKey = `2fa:pending:${input.userId}`;
-      const pending = await redis.get(redisKey);
+      const { code, method, userId } = input;
 
+      const redisKey = redisKeys.pending(userId);
+
+      const type = await ctx.redis.type(redisKey);
+      console.log(">>> REDIS KEY TYPZZZZZZZZZZ:", type); // ← обязательно!
+
+      if (type !== "none" && type !== "hash") {
+        console.warn(`[verify2FA] Redis key ${redisKey} has wrong type: ${type}`);
+        await ctx.redis.del(redisKey);
+      }
+      const pending = await ctx.redis.hgetall(redisKey);
+      console.log(">>> REDIS DATA:", pending); // ← Это покажет, что именно хранится по ключу
       if (!pending) {
         throw new TRPCError({
           code: "UNAUTHORIZED",
@@ -142,6 +155,35 @@ export const authRouter = router({
         });
       }
 
+      if (method === "email") {
+        await verifyEmail2FA({
+          redis: ctx.redis,
+          userId: userId,
+          code,
+        });
+
+        const { tokenId, refreshJwt, accessJwt } = await generateTokens(user.id);
+        await setAuthCookies(accessJwt, refreshJwt);
+
+        try {
+          await ctx.prisma.user.update({
+            where: { id: user.id },
+            data: {
+              lastLogin: new Date(),
+              updatedAt: new Date(),
+              activeRefreshTokens: { push: tokenId },
+            },
+          });
+        } catch (error) {
+          console.error("Ошибка обновления lastLogin:", error);
+        }
+
+        return {
+          message: "2FA подтверждена. Вход выполнен.",
+          userId: user.id,
+        };
+      }
+
       const isCodeValid = authenticator.check(input.code, user.twoFactorSecret);
       if (!isCodeValid) {
         throw new TRPCError({
@@ -151,26 +193,5 @@ export const authRouter = router({
       }
 
       await redis.del(redisKey);
-
-      const { tokenId, refreshJwt, accessJwt } = await generateTokens(user.id);
-      await setAuthCookies(accessJwt, refreshJwt);
-
-      try {
-        await ctx.prisma.user.update({
-          where: { id: user.id },
-          data: {
-            lastLogin: new Date(),
-            updatedAt: new Date(),
-            activeRefreshTokens: { push: tokenId },
-          },
-        });
-      } catch (error) {
-        console.error("Ошибка обновления lastLogin:", error);
-      }
-
-      return {
-        message: "2FA подтверждена. Вход выполнен.",
-        userId: user.id,
-      };
     }),
 });

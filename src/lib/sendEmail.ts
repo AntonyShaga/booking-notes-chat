@@ -1,4 +1,3 @@
-// lib/sendEmail.ts
 import { resend } from "@/lib/resend";
 
 export async function sendEmail({

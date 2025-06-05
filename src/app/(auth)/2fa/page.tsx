@@ -1,4 +1,3 @@
-// app/2fa/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -6,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { toast } from "sonner";
 import { trpc } from "@/utils/trpc";
-
+type TwoFAMethod = "qr" | "manual" | "email";
 export default function TwoFactorPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [code, setCode] = useState("");
@@ -25,7 +24,7 @@ export default function TwoFactorPage() {
 
   const verify2FA = trpc.auth.verify2FAAfterLogin.useMutation({
     onSuccess: (data) => {
-      toast.success("2FA подтверждена!");
+      toast.success(data.message);
       sessionStorage.removeItem("2fa_user_id");
       router.push("/dashboard");
     },
@@ -37,11 +36,43 @@ export default function TwoFactorPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!userId) return;
-    verify2FA.mutate({ userId, code });
+    verify2FA.mutate({ userId, code, method: "email" });
   };
+  const [method, setMethod] = useState<TwoFAMethod>("qr");
+  const enable = trpc.twoFA.request2FA.useMutation({
+    onSuccess(data) {
+      if (data.method === "email") toast.success("Код отправлен на email");
+    },
+    onError(err) {
+      toast.error(err.message);
+    },
+  });
 
   return (
     <div className="flex items-center justify-center min-h-screen px-4">
+      <select
+        className="w-full border rounded p-2 mb-4"
+        value={method}
+        onChange={(e) => setMethod(e.target.value as TwoFAMethod)}
+      >
+        <option value="qr">QR-код</option>
+        <option value="manual">Ручной ввод</option>
+        <option value="email">Код на Email</option>
+      </select>
+
+      <button
+        onClick={() => {
+          if (!userId) {
+            toast.error("Нет userId — невозможно отправить код");
+            return;
+          }
+          enable.mutate({ userId, method });
+        }}
+        className="w-full bg-blue-600 text-white py-2 rounded mb-4"
+        disabled={enable.isLoading}
+      >
+        {enable.isLoading ? "Генерация..." : "Получить код"}
+      </button>
       <form onSubmit={handleSubmit} className="max-w-sm w-full space-y-4">
         <h1 className="text-2xl font-bold text-center">Двухфакторная аутентификация</h1>
 

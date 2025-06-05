@@ -1,4 +1,4 @@
-import { protectedProcedure, router } from "../trpc";
+import { protectedProcedure, publicProcedure, router } from "../trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { generateOTPSecret, generateQRCode } from "@/lib/2fa/generate";
@@ -159,4 +159,78 @@ export const twoFARouter = router({
 
     return { isEnabled: user?.twoFactorEnabled ?? false };
   }),
+  request2FA: publicProcedure
+    .input(
+      z.object({
+        userId: z.string(), // из JWT, temp session, whatever
+        method: z.enum(["qr", "manual", "email"]),
+      })
+    )
+    .output(
+      z.union([
+        z.object({ method: z.literal("qr"), message: z.string() }),
+        z.object({ method: z.literal("manual"), message: z.string() }),
+        z.object({ method: z.literal("email") }),
+      ])
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { userId, method } = input;
+
+      const user = await ctx.prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          email: true,
+          twoFactorEnabled: true,
+          twoFactorSecret: true,
+        },
+      });
+
+      if (!user || !user.twoFactorEnabled) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "2FA не включена или пользователь не найден",
+        });
+      }
+
+      const attemptsKey = redisKeys.attempts(userId);
+      const type = await ctx.redis.type(attemptsKey);
+      console.log(">>> REDIS KEY TYPE:", type); // ← обязательно!
+
+      if (type !== "none" && type !== "string") {
+        console.warn(`[verify2FA] Redis key ${attemptsKey} has wrong type: ${type}`);
+        await ctx.redis.del(attemptsKey);
+      }
+      await checkRateLimit(ctx.redis, attemptsKey);
+      await ctx.redis.del(attemptsKey);
+
+      if (method === "email") {
+        await startEmail2FA({
+          redis: ctx.redis,
+          user: { id: userId, email: user.email },
+          sendEmail: ctx.sendEmail,
+        });
+
+        return { method: "email" };
+      }
+
+      // QR / Manual — просто возвращаем сообщение
+      if (method === "qr") {
+        return {
+          method: "qr",
+          message: "Откройте приложение Google Authenticator и введите код",
+        };
+      }
+
+      if (method === "manual") {
+        return {
+          method: "manual",
+          message: "Введите код из приложения, с которым вы настраивали 2FA",
+        };
+      }
+
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Неверный метод 2FA",
+      });
+    }),
 });

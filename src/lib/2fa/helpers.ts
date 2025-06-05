@@ -7,10 +7,18 @@ export const checkRateLimit = async (
   maxAttempts = 5,
   ttl = 300
 ) => {
+  const type = await redis.type(key);
+
+  if (type !== "none" && type !== "string") {
+    // Предупреждение для дебага
+    console.warn(`[RateLimit] Redis key "${key}" has invalid type: ${type}`);
+    // Удаляем неправильный тип
+    await redis.del(key);
+  }
+
   const attempts = await redis.incr(key);
 
   if (attempts === 1) {
-    // Устанавливаем TTL только при первом запросе
     await redis.expire(key, ttl);
   }
 
