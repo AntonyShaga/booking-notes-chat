@@ -193,13 +193,7 @@ export const twoFARouter = router({
       }
 
       const attemptsKey = redisKeys.attempts(userId);
-      const type = await ctx.redis.type(attemptsKey);
-      console.log(">>> REDIS KEY TYPE:", type); // ← обязательно!
 
-      if (type !== "none" && type !== "string") {
-        console.warn(`[verify2FA] Redis key ${attemptsKey} has wrong type: ${type}`);
-        await ctx.redis.del(attemptsKey);
-      }
       await checkRateLimit(ctx.redis, attemptsKey);
       await ctx.redis.del(attemptsKey);
 

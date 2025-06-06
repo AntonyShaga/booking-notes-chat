@@ -123,15 +123,7 @@ export const authRouter = router({
 
       const redisKey = redisKeys.pending(userId);
 
-      const type = await ctx.redis.type(redisKey);
-      console.log(">>> REDIS KEY TYPZZZZZZZZZZ:", type); // ← обязательно!
-
-      if (type !== "none" && type !== "hash") {
-        console.warn(`[verify2FA] Redis key ${redisKey} has wrong type: ${type}`);
-        await ctx.redis.del(redisKey);
-      }
       const pending = await ctx.redis.hgetall(redisKey);
-      console.log(">>> REDIS DATA:", pending); // ← Это покажет, что именно хранится по ключу
       if (!pending) {
         throw new TRPCError({
           code: "UNAUTHORIZED",
