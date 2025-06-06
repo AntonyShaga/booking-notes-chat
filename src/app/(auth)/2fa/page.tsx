@@ -24,7 +24,7 @@ export default function TwoFactorPage() {
 
   const verify2FA = trpc.auth.verify2FAAfterLogin.useMutation({
     onSuccess: (data) => {
-      toast.success(data.message);
+      toast.success(data?.message);
       sessionStorage.removeItem("2fa_user_id");
       router.push("/dashboard");
     },
