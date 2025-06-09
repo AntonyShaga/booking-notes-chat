@@ -1,16 +1,14 @@
+// components/settings/TwoFA.tsx
 "use client";
-import { trpc } from "@/utils/trpc";
-import { useState, useEffect } from "react";
+
+import { useState } from "react";
 import Disable2FA from "@/components/settings/2FA/Disable2FA";
 import Enable2FA from "@/components/settings/2FA/Enable2FA";
 
-export default function TwoFA() {
-  const { data: status, refetch } = trpc.twoFA.get2FAStatus.useQuery();
-  const [isEnabled, setIsEnabled] = useState(false);
+type Props = { isEnabled: boolean };
 
-  useEffect(() => {
-    if (status?.isEnabled) setIsEnabled(true);
-  }, [status]);
+export default function TwoFA({ isEnabled: initial }: Props) {
+  const [isEnabled, setIsEnabled] = useState(initial);
 
   return (
     <div>
@@ -19,12 +17,7 @@ export default function TwoFA() {
       {isEnabled ? (
         <Disable2FA onSuccess={() => setIsEnabled(false)} />
       ) : (
-        <Enable2FA
-          onSuccess={() => {
-            setIsEnabled(true);
-            refetch();
-          }}
-        />
+        <Enable2FA onSuccess={() => setIsEnabled(true)} />
       )}
     </div>
   );

@@ -1,5 +1,4 @@
 import SideBareSettings from "@/components/SideBareSettings";
-import { trpc } from "@/utils/trpc";
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
   return (
