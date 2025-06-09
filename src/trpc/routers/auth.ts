@@ -86,7 +86,6 @@ export const authRouter = router({
     }
 
     if (user.twoFactorEnabled) {
-      //const key = `2fa:pending:${user.id}`;
       await ctx.redis.set(`2fa:status:${user.id}`, "waiting", "EX", 300); // 5 минут
       return { requires2FA: true, userId: user.id };
     }

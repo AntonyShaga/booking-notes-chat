@@ -2,7 +2,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 
 type Props = {
-  toggle: () => void; // скорее всего это setOpen(false)
+  toggle: () => void;
 };
 
 export default function SideMenu({ toggle }: Props) {
@@ -14,7 +14,7 @@ export default function SideMenu({ toggle }: Props) {
   }, []);
 
   const handleClick = () => {
-    toggle(); // закрываем меню
+    toggle();
   };
 
   return (
@@ -36,7 +36,6 @@ export default function SideMenu({ toggle }: Props) {
             HEADER
           </Link>
         </li>
-        {/* Добавь другие пункты, если нужно */}
       </ul>
     </aside>
   );

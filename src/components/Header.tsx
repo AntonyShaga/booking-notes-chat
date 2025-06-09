@@ -33,7 +33,7 @@ export default function Header() {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [open]);
+  }, [toggle]);
 
   if (isLoading) return null;
 
