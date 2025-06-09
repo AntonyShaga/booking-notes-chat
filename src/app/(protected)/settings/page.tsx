@@ -1,19 +1,15 @@
 import TwoFA from "@/components/settings/2FA/TwoFA";
-import prisma from "@/lib/db";
 import { getServerAuthSession } from "@/lib/auth/getServerAuthSession";
+import { get2FAStatusServer } from "@/lib/auth/get2FAStatusServer";
 
 export default async function SettingsPage() {
   const session = await getServerAuthSession();
   if (!session) return null;
-  console.log(session);
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.userId },
-    select: { twoFactorEnabled: true },
-  });
-  console.log(user);
+
+  const status = await get2FAStatusServer(session.user.userId);
   return (
     <div>
-      <TwoFA isEnabled={user?.twoFactorEnabled ?? false} />
+      <TwoFA isEnabled={status.isEnabled} />
     </div>
   );
 }
