@@ -38,7 +38,7 @@ export const authRouter = router({
     const rateLimitKey = `rate_limit:login:${identifier}`;
     const currentCount = await redis.incr(rateLimitKey);
     if (currentCount === 1) {
-      await redis.expire(rateLimitKey, 10); // 10 секунд
+      await redis.expire(rateLimitKey, 10);
     }
     if (currentCount > 5) {
       const ttl = await redis.ttl(rateLimitKey);

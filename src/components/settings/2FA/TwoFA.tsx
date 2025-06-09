@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Disable2FA from "@/components/settings/2FA/Disable2FA";
 import Enable2FA from "@/components/settings/2FA/Enable2FA";
 
-export default function SettingsPage() {
+export default function TwoFA() {
   const { data: status, refetch } = trpc.twoFA.get2FAStatus.useQuery();
   const [isEnabled, setIsEnabled] = useState(false);
 
