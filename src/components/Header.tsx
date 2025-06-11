@@ -38,7 +38,7 @@ export default function Header() {
   if (isLoading) return null;
 
   return (
-    <header className="flex gap-2 container mx-auto justify-center">
+    <header className="relative z-50 flex gap-2 container mx-auto justify-center">
       <nav className="space-x-6 hidden md:flex">
         <Link href="/">Главная</Link>
         <Link href="/bookings">Бронирование</Link>
@@ -58,33 +58,41 @@ export default function Header() {
       <button onClick={() => logOut.mutate()}>Log Out</button>
 
       {user && (
-        <div>
+        <>
           <div>
-            <button
-              className="w-5 h-5 bg-neutral-900"
-              onClick={() => setToggle((prev) => !prev)}
-            ></button>
+            <button className="w-5 h-5 bg-neutral-900" onClick={() => setToggle((prev) => !prev)} />
           </div>
 
           <AnimatePresence>
             {toggle && (
-              <motion.div
-                ref={menuRef}
-                className="absolute right-0 top-0 h-[calc(100vh-30px)] w-64 bg-white shadow-lg"
-                initial={{ x: "100%" }}
-                animate={{ x: 0 }}
-                exit={{ x: "100%" }}
-                transition={{
-                  type: "tween",
-                  ease: "easeInOut",
-                  duration: 0.3,
-                }}
-              >
-                <SideMenu toggle={() => setToggle(false)} />
-              </motion.div>
+              <>
+                <motion.div
+                  className="fixed inset-0 bg-black/10  z-40"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  onClick={() => setToggle(false)}
+                />
+
+                <motion.div
+                  ref={menuRef}
+                  className="fixed right-0 top-0 h-full w-64 bg-white shadow-lg z-50"
+                  initial={{ x: "100%" }}
+                  animate={{ x: 0 }}
+                  exit={{ x: "100%" }}
+                  transition={{
+                    type: "tween",
+                    ease: "easeInOut",
+                    duration: 0.3,
+                  }}
+                >
+                  <SideMenu toggle={() => setToggle(false)} />
+                </motion.div>
+              </>
             )}
           </AnimatePresence>
-        </div>
+        </>
       )}
     </header>
   );

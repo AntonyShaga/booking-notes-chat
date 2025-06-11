@@ -162,7 +162,7 @@ export const twoFARouter = router({
   request2FA: publicProcedure
     .input(
       z.object({
-        userId: z.string(), // из JWT, temp session, whatever
+        userId: z.string(),
         method: z.enum(["qr", "manual", "email"]),
       })
     )
