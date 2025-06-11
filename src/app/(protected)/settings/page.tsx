@@ -8,7 +8,7 @@ export default async function SettingsPage() {
 
   const status = await get2FAStatusServer(session.user.userId);
   return (
-    <div>
+    <div className={"flex w-full"}>
       <TwoFA isEnabled={status.isEnabled} />
     </div>
   );

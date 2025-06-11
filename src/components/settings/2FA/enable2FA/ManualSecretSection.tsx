@@ -21,7 +21,7 @@ export default function ManualSecretSection({ secret }: { secret: string | null 
       transition={{ duration: 0.2 }}
       className="mt-4 mb-4"
     >
-      <p className="mb-2">Введите этот секрет вручную:</p>
+      <p className="mb-2 text-center">Введите этот секрет вручную:</p>
       <div className="flex items-center gap-2">
         <code className="bg-gray-100 p-2 block rounded break-all flex-1">
           {secret || "••••••••••••••••••••••••••••"}
