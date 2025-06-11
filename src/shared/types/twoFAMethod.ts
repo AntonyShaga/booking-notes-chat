@@ -1,1 +1,1 @@
-type TwoFAMethod = "qr" | "manual" | "email";
+export type TwoFAMethod = "qr" | "manual" | "email";

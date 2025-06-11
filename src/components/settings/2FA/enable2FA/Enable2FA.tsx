@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import Button from "@/components/ui/Button";
 import VerificationSection from "@/components/settings/2FA/enable2FA/VerificationSection";
 import MethodSelector from "@/components/settings/2FA/enable2FA/MethodSelector";
+import { TwoFAMethod } from "@/shared/types/twoFAMethod";
 
 export default function Enable2FA({ onSuccess }: { onSuccess: () => void }) {
   const [method, setMethod] = useState<TwoFAMethod>("qr");

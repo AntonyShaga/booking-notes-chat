@@ -3,6 +3,7 @@ import { AnimatePresence } from "framer-motion";
 import QRCodeSection from "./QRCodeSection";
 import ManualSecretSection from "./ManualSecretSection";
 import CodeVerificationSection from "./CodeVerificationSection";
+import { TwoFAMethod } from "@/shared/types/twoFAMethod";
 
 type Props = {
   method: TwoFAMethod;
