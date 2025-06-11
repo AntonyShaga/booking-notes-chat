@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import Disable2FA from "@/components/settings/2FA/Disable2FA";
-import Enable2FA from "@/components/settings/2FA/Enable2FA";
+import Enable2FA from "@/components/settings/2FA/enable2FA/Enable2FA";
 
 type Props = { isEnabled: boolean };
 
