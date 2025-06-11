@@ -9,7 +9,7 @@ export async function getServerAuthSession() {
 
   try {
     const payload = await verifyToken(token);
-    console.log(payload);
+
     return { user: payload };
   } catch {
     return null;

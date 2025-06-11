@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import SideMenu from "@/components/side-menu/SideMenu";
 
-export default function Header() {
+export default function Header({ children }: { children: React.ReactNode }) {
   const [toggle, setToggle] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const { data: user, isLoading } = trpc.auth.getCurrentUser.useQuery();
@@ -39,12 +39,7 @@ export default function Header() {
 
   return (
     <header className="relative z-50 flex gap-2 container mx-auto justify-center">
-      <nav className="space-x-6 hidden md:flex">
-        <Link href="/">Главная</Link>
-        <Link href="/bookings">Бронирование</Link>
-        <Link href="/orders">Заказы</Link>
-        <Link href="/dashboard">dashboard</Link>
-      </nav>
+      {children}
 
       {user ? (
         <span>Привет, {user.email}</span>

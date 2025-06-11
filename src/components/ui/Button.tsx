@@ -1,3 +1,4 @@
+"use client";
 import React, {
   useEffect,
   ButtonHTMLAttributes,
@@ -84,6 +85,7 @@ export default function Button({
         className={cn(buttonClasses, className)}
         target={target}
         rel={linkRel}
+        role="link"
         aria-disabled={isDisabled || isLoading}
         aria-busy={isLoading}
         tabIndex={isDisabled || isLoading ? -1 : undefined}

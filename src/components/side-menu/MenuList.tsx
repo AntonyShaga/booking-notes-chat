@@ -1,9 +1,10 @@
 import Link from "next/link";
+import { getMenuList } from "@/lib/getMenuList";
 type Props = {
   onClickToggle: () => void;
 };
-export default function MenuList({ onClickToggle }: Props) {
-  const list = [{ href: "/settings", label: "Настройки" }];
+export default async function MenuList({ onClickToggle }: Props) {
+  const list = await getMenuList();
   return (
     <nav aria-label="Боковая навигация">
       <ul role="list">

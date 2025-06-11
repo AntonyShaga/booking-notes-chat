@@ -20,7 +20,7 @@ export const protectedProcedure = t.procedure.use(
     return next({
       ctx: {
         ...ctx,
-        session: ctx.session, // теперь точно не undefined
+        session: ctx.session,
       },
     });
   })

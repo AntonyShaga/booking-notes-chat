@@ -1,5 +1,3 @@
-// lib/auth/refreshToken.ts
-
 import jwt from "jsonwebtoken";
 import { PrismaClient } from "@prisma/client";
 import { randomUUID } from "crypto";

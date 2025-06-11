@@ -12,7 +12,7 @@ export default function SideBareSettings() {
   const pathname = usePathname();
 
   return (
-    <div className="px-2 py-2 my-10 bg-white min-h-screen">
+    <nav className="px-2 py-2 my-10 bg-white min-h-screen">
       <ul className="flex flex-col gap-1">
         {list.map((item, index) => {
           const isActive = pathname === item.link;
@@ -39,6 +39,6 @@ export default function SideBareSettings() {
           );
         })}
       </ul>
-    </div>
+    </nav>
   );
 }
