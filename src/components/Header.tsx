@@ -4,7 +4,7 @@ import { trpc } from "@/utils/trpc";
 import { toast } from "sonner";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import SideMenu from "@/components/SideMenu";
+import SideMenu from "@/components/side-menu/SideMenu";
 
 export default function Header() {
   const [toggle, setToggle] = useState(false);
