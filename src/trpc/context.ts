@@ -23,7 +23,7 @@ export const createContext = async (opts: FetchCreateContextFnOptions) => {
       const payload = jwt.verify(accessToken, jwtSecret) as { userId: string };
       user = await prisma.user.findUnique({
         where: { id: payload.userId },
-        select: { id: true, email: true, activeRefreshTokens: true },
+        select: { id: true, email: true, activeRefreshTokens: true, name: true, picture: true },
       });
     } catch (err: unknown) {
       console.warn("❗ Access токен невалиден:", err instanceof Error ? err.message : String(err));

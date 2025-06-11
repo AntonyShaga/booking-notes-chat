@@ -87,7 +87,11 @@ export default function Header() {
                     duration: 0.3,
                   }}
                 >
-                  <SideMenu toggle={() => setToggle(false)} />
+                  <SideMenu
+                    userName={user.name}
+                    userPicture={user.picture}
+                    toggle={() => setToggle(false)}
+                  />
                 </motion.div>
               </>
             )}
