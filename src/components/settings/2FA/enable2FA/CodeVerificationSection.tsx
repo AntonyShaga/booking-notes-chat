@@ -1,5 +1,6 @@
 "use client";
 import { motion } from "framer-motion";
+import Button from "@/components/ui/Button";
 
 export default function CodeVerificationSection({
   code,
@@ -29,13 +30,13 @@ export default function CodeVerificationSection({
         maxLength={6}
         className="w-full border rounded p-2 mb-2"
       />
-      <button
+      <Button
         onClick={onConfirm}
         disabled={isLoading || code.length !== 6}
         className="w-full bg-green-600 text-white py-2 rounded"
       >
         {isLoading ? "Проверка..." : "Подтвердить"}
-      </button>
+      </Button>
     </motion.div>
   );
 }
