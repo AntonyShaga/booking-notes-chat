@@ -12,17 +12,17 @@ export async function tryRefreshToken({
   jwtSecret: string;
 }) {
   const decoded = jwt.decode(refreshToken) as {
-    userId?: string;
+    sub?: string;
     jti?: string;
     isRefresh?: boolean;
   } | null;
 
-  if (!decoded?.userId || !decoded.jti || !decoded.isRefresh) {
+  if (!decoded?.sub || !decoded.jti || !decoded.isRefresh) {
     throw new Error("Invalid refresh token structure");
   }
 
   const user = await prisma.user.findUnique({
-    where: { id: decoded.userId },
+    where: { id: decoded.sub },
     select: { id: true, email: true, activeRefreshTokens: true, name: true, picture: true },
   });
 
@@ -33,19 +33,19 @@ export async function tryRefreshToken({
   const verified = jwt.verify(refreshToken, jwtSecret, {
     ignoreExpiration: true,
   }) as {
-    userId: string;
+    sub: string;
     jti: string;
     isRefresh: boolean;
   };
 
-  if (verified.userId !== decoded.userId || verified.jti !== decoded.jti || !verified.isRefresh) {
+  if (verified.sub !== decoded.sub || verified.jti !== decoded.jti || !verified.isRefresh) {
     throw new Error("Payload mismatch");
   }
 
   const newJti = randomUUID();
-  const accessToken = jwt.sign({ userId: user.id, jti: newJti }, jwtSecret, { expiresIn: "15m" });
+  const accessToken = jwt.sign({ sub: user.id, jti: newJti }, jwtSecret, { expiresIn: "15m" });
 
-  const newRefreshToken = jwt.sign({ userId: user.id, jti: newJti, isRefresh: true }, jwtSecret, {
+  const newRefreshToken = jwt.sign({ sub: user.id, jti: newJti, isRefresh: true }, jwtSecret, {
     expiresIn: "7d",
   });
 

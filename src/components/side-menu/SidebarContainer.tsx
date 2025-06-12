@@ -19,7 +19,7 @@ type SideMenuButtonProps = {
 
 export default function SidebarContainer({ user }: SideMenuButtonProps) {
   const [toggle, setToggle] = useState(false);
-
+  const { data: userq } = trpc.auth.getCurrentUser.useQuery();
   const menuRef = useRef<HTMLDivElement>(null);
 
   useClickOutside(menuRef, () => setToggle(false), toggle);
