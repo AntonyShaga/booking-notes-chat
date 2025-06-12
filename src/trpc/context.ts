@@ -37,7 +37,7 @@ export const createContext = async (opts: FetchCreateContextFnOptions) => {
       }
     } catch (err) {
       console.warn("❗ Access токен невалиден:", err instanceof Error ? err.message : String(err));
-      // Попробовать обновить через refresh
+
       if (refreshToken) {
         try {
           const result = await tryRefreshToken({ refreshToken, jwtSecret });

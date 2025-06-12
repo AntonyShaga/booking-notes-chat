@@ -7,7 +7,7 @@ export default async function Header() {
   const user = await withServerSession((userId) =>
     getUserFields(userId, { name: true, picture: true })
   );
-
+  console.log(user);
   if (!user) return null;
   return (
     <header className="relative  z-50 flex flex-col gap-2 container mx-auto justify-center">
