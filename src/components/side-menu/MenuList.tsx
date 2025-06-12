@@ -1,13 +1,15 @@
 import Link from "next/link";
-import { getMenuList } from "@/lib/getMenuList";
 type Props = {
   onClickToggle: () => void;
 };
-export default async function MenuList({ onClickToggle }: Props) {
-  const list = await getMenuList();
+export default function MenuList({ onClickToggle }: Props) {
+  const list = [
+    { href: "/settings", label: "Настройки" },
+    { href: "/", label: "Домой" },
+  ];
   return (
     <nav aria-label="Боковая навигация">
-      <ul role="list">
+      <ul role="list" className={"flex flex-col gap-5"}>
         {list.map((item, index) => (
           <li
             key={index}

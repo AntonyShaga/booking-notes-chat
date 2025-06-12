@@ -1,4 +1,6 @@
 "use client";
+import { TwoFAMethod } from "@/shared/types/twoFAMethod";
+
 type Props = {
   method: TwoFAMethod;
   setMethod: (method: TwoFAMethod) => void;
