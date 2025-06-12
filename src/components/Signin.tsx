@@ -14,7 +14,7 @@ export default function SignIn() {
         router.push("/2fa");
         return;
       }
-      router.push("/dashboard");
+      window.location.href = "/";
     },
     onError: (error) => {
       toast.error(error.message);

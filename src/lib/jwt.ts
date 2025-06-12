@@ -12,11 +12,11 @@ export async function generateTokens(userId: string) {
   const tokenId = generateTokenId();
 
   const [accessJwt, refreshJwt] = await Promise.all([
-    jwt.sign({ userId, jti: tokenId }, JWT_SECRET, {
+    jwt.sign({ sub: userId, jti: tokenId }, JWT_SECRET, {
       expiresIn: "15m",
       algorithm: "HS256",
     }),
-    jwt.sign({ userId, jti: tokenId, isRefresh: true }, JWT_SECRET, {
+    jwt.sign({ sub: userId, jti: tokenId, isRefresh: true }, JWT_SECRET, {
       expiresIn: "7d",
       algorithm: "HS256",
     }),

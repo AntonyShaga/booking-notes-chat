@@ -1,15 +1,16 @@
 import TwoFA from "@/components/settings/2FA/TwoFA";
-import { getServerAuthSession } from "@/lib/auth/getServerAuthSession";
-import { get2FAStatusServer } from "@/lib/auth/get2FAStatusServer";
+import { withServerSession } from "@/lib/auth/withServerSession";
+import { getUserFields } from "@/lib/getUserFields";
 
 export default async function SettingsPage() {
-  const session = await getServerAuthSession();
-  if (!session) return null;
+  const status = await withServerSession((userId) =>
+    getUserFields(userId, { twoFactorEnabled: true })
+  );
+  const isEnabled = status?.twoFactorEnabled ?? false;
 
-  const status = await get2FAStatusServer(session.user.userId);
   return (
     <div className={"flex w-full"}>
-      <TwoFA isEnabled={status.isEnabled} />
+      <TwoFA isEnabled={isEnabled} />
     </div>
   );
 }

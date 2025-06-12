@@ -1,15 +1,28 @@
 "use client";
 import { AnimatePresence, motion } from "framer-motion";
 import SideMenu from "@/components/side-menu/SideMenu";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { trpc } from "@/utils/trpc";
 import Link from "next/link";
 import { toast } from "sonner";
+import Button from "@/components/ui/Button";
+import Image from "next/image";
+import { useClickOutside } from "@/shared/hooks/useClickOutside";
 
-export default function SidebarContainer() {
+type User = {
+  name: string | null;
+  picture: string | null;
+};
+type SideMenuButtonProps = {
+  user: User;
+};
+
+export default function SidebarContainer({ user }: SideMenuButtonProps) {
   const [toggle, setToggle] = useState(false);
+
   const menuRef = useRef<HTMLDivElement>(null);
-  const { data: user } = trpc.auth.getCurrentUser.useQuery();
+
+  useClickOutside(menuRef, () => setToggle(false), toggle);
 
   const logOut = trpc.logout.logout.useMutation({
     onSuccess: (data) => {
@@ -18,27 +31,36 @@ export default function SidebarContainer() {
     },
   });
 
-  // Закрытие при клике вне меню
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setToggle(false);
-      }
-    };
-
-    if (toggle) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [toggle]);
-
   return (
-    <header className="relative z-50 flex gap-2 container mx-auto justify-center">
+    <div className="relative z-50 flex justify-center gap-4">
       {user ? (
-        <span>Привет, {user.email}</span>
+        <>
+          <Button
+            className="flex items-center gap-2 bg-inherit"
+            onClick={() => setToggle((prev) => !prev)}
+          >
+            {user?.picture ? (
+              <Image
+                src={user.picture}
+                alt="User avatar"
+                width={32}
+                height={32}
+                priority
+                className="w-8 h-8 rounded-full object-cover"
+              />
+            ) : (
+              <span
+                className="w-8 h-8 bg-blue-400 rounded-full"
+                role="img"
+                aria-label="Заглушка аватара пользователя"
+              />
+            )}
+            <span className="text-sm">{user.name ?? "Пользователь"}</span>
+          </Button>
+          <Button className={"bg-inherit"} onClick={() => logOut.mutate()}>
+            Log Out
+          </Button>
+        </>
       ) : (
         <>
           <Link href="/signup">signup</Link>
@@ -46,14 +68,8 @@ export default function SidebarContainer() {
         </>
       )}
 
-      <button onClick={() => logOut.mutate()}>Log Out</button>
-
       {user && (
         <>
-          <div>
-            <button className="w-5 h-5 bg-neutral-900" onClick={() => setToggle((prev) => !prev)} />
-          </div>
-
           <AnimatePresence>
             {toggle && (
               <>
@@ -89,6 +105,6 @@ export default function SidebarContainer() {
           </AnimatePresence>
         </>
       )}
-    </header>
+    </div>
   );
 }

@@ -1,7 +1,8 @@
+"use client";
 import { useRef } from "react";
-import MenuList from "@/components/side-menu/MenuList";
 import UserInfoHeader from "@/components/side-menu/UserInfoHeader";
 import { useDialogAccessibility } from "@/shared/hooks/useDialogAccessibility";
+import MenuList from "@/components/side-menu/MenuList";
 
 type Props = {
   toggle: () => void;
