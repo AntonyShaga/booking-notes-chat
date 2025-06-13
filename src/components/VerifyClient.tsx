@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 export default function VerifyClient() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
+  console.log(token);
   const router = useRouter();
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
 
@@ -18,8 +19,8 @@ export default function VerifyClient() {
       toast.success("Email подтверждён!");
       router.replace("/");
     },
-    onError: () => {
-      toast.error("Ошибка подтверждения почты");
+    onError: (error) => {
+      toast.error(error.message);
       setStatus("error");
     },
   });

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
 import { Github } from "lucide-react";
 import { toast } from "sonner";
+import Button from "@/components/ui/Button";
 export default function SignUp() {
   const router = useRouter();
   const registerMutation = trpc.register.register.useMutation({
@@ -26,21 +27,24 @@ export default function SignUp() {
   };
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md w-full max-w-md">
-        <button
-          onClick={handleGoogleLogin}
-          className="flex items-center gap-3 bg-white text-black border border-gray-300 px-6 py-3 rounded-xl shadow hover:shadow-md transition-all"
-        >
-          <FcGoogle size={24} />
-          Войти через Google
-        </button>
-        <button
-          onClick={handleGitleLogin}
-          className="flex items-center gap-3 bg-white text-black border border-gray-300 px-6 py-3 rounded-xl shadow hover:shadow-md transition-all"
-        >
-          <Github size={24} />
-          Войти через Git
-        </button>
+      <div className=" flex gap-2  flex-col bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md w-full max-w-md">
+        <div className={"flex justify-between"}>
+          <Button
+            onClick={handleGoogleLogin}
+            className="flex items-center bg-white text-black border border-gray-300 text-sm   rounded-xl shadow hover:shadow-md transition-all"
+            leftIcon={<FcGoogle size={24} />}
+          >
+            Войти через Google
+          </Button>
+          <Button
+            onClick={handleGitleLogin}
+            className="flex items-center bg-white text-black border border-gray-300 text-sm   rounded-xl shadow hover:shadow-md transition-all"
+            leftIcon={<Github size={24} />}
+          >
+            Войти через Git
+          </Button>
+        </div>
+
         <AuthForm mode="Signup" onSubmit={handleSignup} />
 
         <div className="min-h-[2.5rem] mt-4 transition-opacity duration-200">

@@ -2,12 +2,12 @@ import { publicProcedure, router } from "@/trpc/trpc";
 import { TRPCError } from "@trpc/server";
 import argon2 from "argon2";
 import { loginSchema } from "@/shared/validations/auth";
-import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
 import { randomUUID } from "node:crypto";
 import { resend } from "@/lib/resend";
 import { addHours } from "date-fns";
 import { redis } from "@/lib/redis";
+import { generateTokens } from "@/lib/jwt";
 
 export const registerRouter = router({
   register: publicProcedure.input(loginSchema).mutation(async ({ input, ctx }) => {
@@ -23,7 +23,6 @@ export const registerRouter = router({
 
     const rateLimitKey = `rate_limit:register:${identifier}`;
     const currentCount = await redis.incr(rateLimitKey);
-
     if (currentCount === 1) {
       await redis.expire(rateLimitKey, 10);
     }
@@ -47,114 +46,85 @@ export const registerRouter = router({
       });
     }
 
-    try {
-      const hashedPassword = await argon2.hash(input.password);
-      const tokenId = randomUUID();
-      const verificationToken = randomUUID();
-      const verificationTokenExpires = addHours(new Date(), 24);
+    const hashedPassword = await argon2.hash(input.password);
+    const verificationToken = randomUUID();
+    const verificationTokenExpires = addHours(new Date(), 24);
 
-      await ctx.prisma.user.deleteMany({
-        where: {
+    // Удаляем старых неподтвержденных юзеров
+    await ctx.prisma.user.deleteMany({
+      where: {
+        email: input.email,
+        verificationTokenExpires: { lt: new Date() },
+      },
+    });
+
+    const { id: userId } = await ctx.prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: {
           email: input.email,
-          verificationTokenExpires: { lt: new Date() },
+          password: hashedPassword,
+          activeRefreshTokens: [],
+        },
+        select: { id: true },
+      });
+
+      const { tokenId } = await generateTokens(user.id); // заранее получить ID
+
+      await tx.user.update({
+        where: { id: user.id },
+        data: {
+          verificationToken,
+          verificationTokenExpires,
+          activeRefreshTokens: { push: tokenId },
         },
       });
 
-      const newUser = await ctx.prisma.$transaction(async (tx) => {
-        const user = await tx.user.create({
-          data: {
-            email: input.email,
-            password: hashedPassword,
-            activeRefreshTokens: [],
-          },
-          select: { id: true },
-        });
+      return { id: user.id };
+    });
 
-        await tx.user.update({
-          where: { id: user.id },
-          data: {
-            verificationToken,
-            verificationTokenExpires,
-            activeRefreshTokens: { push: tokenId },
-          },
-        });
-
-        return user;
+    try {
+      await resend.emails.send({
+        from: "no-reply@resend.dev",
+        to: input.email,
+        subject: "Подтверждение почты",
+        html: `
+          <p>Здравствуйте! Подтвердите свою почту, перейдя по ссылке:</p>
+          <a href="${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${verificationToken}">
+            Подтвердить Email
+          </a>`,
       });
-
-      try {
-        await resend.emails.send({
-          from: "no-reply@resend.dev",
-          to: input.email,
-          subject: "Подтверждение почты",
-          html: `
-            <p>Здравствуйте! Подтвердите свою почту, перейдя по ссылке:</p>
-            <a href="${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${verificationToken}">
-              Подтвердить Email
-            </a>`,
-        });
-      } catch (error) {
-        console.error("Ошибка отправки email:", error);
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Не удалось отправить письмо для подтверждения почты",
-          cause: error instanceof Error ? error.message : String(error),
-        });
-      }
-
-      const jwtSecret = process.env.JWT_SECRET;
-      if (!jwtSecret) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Ошибка конфигурации сервера",
-        });
-      }
-
-      const tokenPayload = {
-        userId: newUser.id,
-        jti: tokenId,
-      };
-
-      const [token, refreshToken] = await Promise.all([
-        jwt.sign(tokenPayload, jwtSecret, { expiresIn: "15m", algorithm: "HS256" }),
-        jwt.sign({ ...tokenPayload, isRefresh: true }, jwtSecret, {
-          expiresIn: "7d",
-          algorithm: "HS256",
-        }),
-      ]);
-
-      // 🍪 Установка куки
-      const cookieOptions = {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        path: "/",
-      };
-
-      const cookieStore = await cookies();
-      cookieStore.set("token", token, {
-        ...cookieOptions,
-        maxAge: 15 * 60,
-        sameSite: "strict",
-      });
-
-      cookieStore.set("refreshToken", refreshToken, {
-        ...cookieOptions,
-        maxAge: 60 * 60 * 24 * 7,
-        sameSite: "strict",
-        path: "/",
-      });
-
-      return {
-        success: true,
-        message: "Регистрация прошла успешно",
-      };
     } catch (error) {
-      console.error("Registration error:", error);
+      console.error("Ошибка отправки email:", error);
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: "Произошла ошибка при регистрации",
-        cause: error,
+        message: "Не удалось отправить письмо для подтверждения почты",
+        cause: error instanceof Error ? error.message : String(error),
       });
     }
+
+    // Генерация токенов (второй раз для доступа, но с тем же userId)
+    const { accessJwt, refreshJwt } = await generateTokens(userId);
+
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      sameSite: "strict" as const,
+    };
+
+    const cookieStore = await cookies();
+    cookieStore.set("token", accessJwt, {
+      ...cookieOptions,
+      maxAge: 15 * 60,
+    });
+    cookieStore.set("refreshToken", refreshJwt, {
+      ...cookieOptions,
+      maxAge: 60 * 60 * 24 * 7,
+    });
+
+    return {
+      success: true,
+      message: "Регистрация прошла успешно. Подтвердите почту.",
+    };
   }),
 });

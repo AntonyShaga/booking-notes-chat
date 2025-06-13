@@ -13,6 +13,7 @@ export const mergeRouters = t.mergeRouters;
 
 export const protectedProcedure = t.procedure.use(
   middleware(async ({ ctx, next }) => {
+    console.log(ctx);
     if (!ctx.session?.user) {
       throw new TRPCError({ code: "UNAUTHORIZED" });
     }

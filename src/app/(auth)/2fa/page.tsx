@@ -26,6 +26,7 @@ export default function TwoFactorPage() {
     onSuccess: (data) => {
       toast.success(data?.message);
       sessionStorage.removeItem("2fa_user_id");
+      window.location.href = "/";
       router.push("/dashboard");
     },
     onError: (error) => {

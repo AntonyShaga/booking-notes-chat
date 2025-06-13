@@ -119,7 +119,6 @@ export const authRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       const { code, method, userId } = input;
-
       const redisKey = redisKeys.pending(userId);
 
       const pending = await ctx.redis.hgetall(redisKey);
@@ -131,7 +130,7 @@ export const authRouter = router({
       }
 
       const user = await ctx.prisma.user.findUnique({
-        where: { id: input.userId },
+        where: { id: userId },
         select: {
           id: true,
           twoFactorSecret: true,
@@ -139,10 +138,10 @@ export const authRouter = router({
         },
       });
 
-      if (!user || !user.twoFactorSecret) {
+      if (!user) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "2FA не настроена или пользователь не найден",
+          message: "Пользователь не найден",
         });
       }
 
@@ -152,37 +151,47 @@ export const authRouter = router({
           userId: userId,
           code,
         });
+      }
 
-        const { tokenId, refreshJwt, accessJwt } = await generateTokens(user.id);
-        await setAuthCookies(accessJwt, refreshJwt);
-
-        try {
-          await ctx.prisma.user.update({
-            where: { id: user.id },
-            data: {
-              lastLogin: new Date(),
-              updatedAt: new Date(),
-              activeRefreshTokens: { push: tokenId },
-            },
+      if (method === "qr" || method === "manual") {
+        if (!user.twoFactorSecret) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "2FA не настроена",
           });
-        } catch (error) {
-          console.error("Ошибка обновления lastLogin:", error);
         }
 
-        return {
-          message: "2FA подтверждена. Вход выполнен.",
-          userId: user.id,
-        };
+        const isValid = authenticator.check(code, user.twoFactorSecret);
+        if (!isValid) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "Неверный код 2FA",
+          });
+        }
       }
 
-      const isCodeValid = authenticator.check(input.code, user.twoFactorSecret);
-      if (!isCodeValid) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "Неверный код 2FA",
+      // Всё ок, удаляем redis ключ и авторизуем
+      await ctx.redis.del(redisKey);
+
+      const { tokenId, refreshJwt, accessJwt } = await generateTokens(user.id);
+      await setAuthCookies(accessJwt, refreshJwt);
+
+      try {
+        await ctx.prisma.user.update({
+          where: { id: user.id },
+          data: {
+            lastLogin: new Date(),
+            updatedAt: new Date(),
+            activeRefreshTokens: { push: tokenId },
+          },
         });
+      } catch (error) {
+        console.error("Ошибка обновления lastLogin:", error);
       }
 
-      await redis.del(redisKey);
+      return {
+        message: "2FA подтверждена. Вход выполнен.",
+        userId: user.id,
+      };
     }),
 });
