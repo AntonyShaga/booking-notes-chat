@@ -1,4 +1,3 @@
-// /api/auth/github/start.ts
 import { NextResponse } from "next/server";
 import { createHash, randomBytes } from "crypto";
 

@@ -8,6 +8,7 @@ import { trpc } from "@/utils/trpc";
 type TwoFAMethod = "qr" | "manual" | "email";
 export default function TwoFactorPage() {
   const [userId, setUserId] = useState<string | null>(null);
+  const [method, setMethod] = useState<TwoFAMethod>("qr");
   const [code, setCode] = useState("");
   const router = useRouter();
 
@@ -37,9 +38,9 @@ export default function TwoFactorPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!userId) return;
-    verify2FA.mutate({ userId, code, method: "email" });
+    verify2FA.mutate({ userId, code, method });
   };
-  const [method, setMethod] = useState<TwoFAMethod>("qr");
+
   const enable = trpc.twoFA.request2FA.useMutation({
     onSuccess(data) {
       if (data.method === "email") toast.success("Код отправлен на email");

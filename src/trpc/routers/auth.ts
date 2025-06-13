@@ -120,7 +120,7 @@ export const authRouter = router({
     .mutation(async ({ input, ctx }) => {
       const { code, method, userId } = input;
       const redisKey = redisKeys.pending(userId);
-
+      console.log(method);
       const pending = await ctx.redis.hgetall(redisKey);
       if (!pending) {
         throw new TRPCError({

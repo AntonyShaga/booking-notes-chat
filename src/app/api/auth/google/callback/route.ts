@@ -1,4 +1,3 @@
-// app/api/auth/google/callback/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { OAuth2Client } from "google-auth-library";
 import { prisma } from "@/lib/prisma";
