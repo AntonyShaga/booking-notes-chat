@@ -112,7 +112,6 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // Генерация JWT токенов
     const { tokenId, refreshJwt, accessJwt } = await generateTokens(user.id);
 
     await prisma.user.update({
