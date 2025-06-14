@@ -4,7 +4,6 @@ import "../style/globals.css";
 import { Providers } from "./providers";
 import Header from "@/components/header/Header";
 import { Toaster } from "sonner";
-import HeaderList from "@/components/header/HeaderList";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,7 +30,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Providers>
           <Header />
-          {children}
+          <div className="flex flex-col gap-2 container mx-auto  justify-center">{children}</div>
           <Toaster />
         </Providers>
       </body>

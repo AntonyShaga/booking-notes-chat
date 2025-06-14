@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { toast } from "sonner";
 import { trpc } from "@/utils/trpc";
+import MethodSelector from "@/components/settings/2FA/enable2FA/MethodSelector";
 type TwoFAMethod = "qr" | "manual" | "email";
 export default function TwoFactorPage() {
   const [userId, setUserId] = useState<string | null>(null);
@@ -12,7 +13,6 @@ export default function TwoFactorPage() {
   const [code, setCode] = useState("");
   const router = useRouter();
 
-  // Чтение userId из sessionStorage
   useEffect(() => {
     const storedId = sessionStorage.getItem("2fa_user_id");
     if (!storedId) {
@@ -52,7 +52,7 @@ export default function TwoFactorPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen px-4">
-      <select
+      {/* <select
         className="w-full border rounded p-2 mb-4"
         value={method}
         onChange={(e) => setMethod(e.target.value as TwoFAMethod)}
@@ -60,8 +60,8 @@ export default function TwoFactorPage() {
         <option value="qr">QR-код</option>
         <option value="manual">Ручной ввод</option>
         <option value="email">Код на Email</option>
-      </select>
-
+      </select>*/}
+      <MethodSelector method={method} setMethod={setMethod} />
       <button
         onClick={() => {
           if (!userId) {
