@@ -98,6 +98,7 @@ export default function TwoFactorPage() {
         setCode={setCode}
         isLoading={verify2FA.isLoading}
         onConfirm={() => {
+          if (!userId) return;
           verify2FA.mutate({ userId, code, method });
         }}
       />
