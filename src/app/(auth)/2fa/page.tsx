@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { trpc } from "@/utils/trpc";
 import MethodSelector from "@/components/settings/2FA/enable2FA/MethodSelector";
+import Button from "@/components/ui/Button";
+import CodeVerificationSection from "@/components/settings/2FA/enable2FA/CodeVerificationSection";
 type TwoFAMethod = "qr" | "manual" | "email";
 export default function TwoFactorPage() {
   const [userId, setUserId] = useState<string | null>(null);
@@ -35,12 +37,12 @@ export default function TwoFactorPage() {
     },
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  /* const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!userId) return;
     verify2FA.mutate({ userId, code, method });
   };
-
+*/
   const enable = trpc.twoFA.request2FA.useMutation({
     onSuccess(data) {
       if (data.method === "email") toast.success("Код отправлен на email");
@@ -51,18 +53,9 @@ export default function TwoFactorPage() {
   });
 
   return (
-    <div className="flex items-center justify-center min-h-screen px-4">
-      {/* <select
-        className="w-full border rounded p-2 mb-4"
-        value={method}
-        onChange={(e) => setMethod(e.target.value as TwoFAMethod)}
-      >
-        <option value="qr">QR-код</option>
-        <option value="manual">Ручной ввод</option>
-        <option value="email">Код на Email</option>
-      </select>*/}
+    <div className="flex flex-col items-center justify-center min-h-screen px-4">
       <MethodSelector method={method} setMethod={setMethod} />
-      <button
+      <Button
         onClick={() => {
           if (!userId) {
             toast.error("Нет userId — невозможно отправить код");
@@ -74,8 +67,9 @@ export default function TwoFactorPage() {
         disabled={enable.isLoading}
       >
         {enable.isLoading ? "Генерация..." : "Получить код"}
-      </button>
-      <form onSubmit={handleSubmit} className="max-w-sm w-full space-y-4">
+      </Button>
+
+      {/*<form onSubmit={handleSubmit} className="max-w-sm w-full space-y-4">
         <h1 className="text-2xl font-bold text-center">Двухфакторная аутентификация</h1>
 
         <input
@@ -97,7 +91,16 @@ export default function TwoFactorPage() {
         >
           {verify2FA.isLoading ? "Проверка..." : "Подтвердить"}
         </button>
-      </form>
+      </form>*/}
+      <CodeVerificationSection
+        key={`code-verification-${method}`}
+        code={code}
+        setCode={setCode}
+        isLoading={verify2FA.isLoading}
+        onConfirm={() => {
+          verify2FA.mutate({ userId, code, method });
+        }}
+      />
     </div>
   );
 }
