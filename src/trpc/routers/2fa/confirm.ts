@@ -1,4 +1,4 @@
-import { protectedProcedure, router } from "@/trpc/trpc";
+import { protectedProcedure } from "@/trpc/trpc";
 import { confirm2FASchema } from "@/shared/validations/2fa";
 import { TRPCError } from "@trpc/server";
 import { validateOTPCode } from "@/lib/2fa/validate";
