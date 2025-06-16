@@ -2,12 +2,12 @@ import { publicProcedure, router } from "@/trpc/trpc";
 import { TRPCError } from "@trpc/server";
 import argon2 from "argon2";
 import { loginSchema } from "@/shared/validations/auth";
-import { cookies } from "next/headers";
 import { randomUUID } from "node:crypto";
-import { resend } from "@/lib/resend";
 import { addHours } from "date-fns";
-import { redis } from "@/lib/redis";
 import { generateTokens } from "@/lib/jwt";
+import { redisKeys } from "@/lib/2fa/redis";
+import { checkRateLimit } from "@/lib/2fa/helpers";
+import { setAuthCookies } from "@/lib/auth/cookies";
 
 export const registerRouter = router({
   register: publicProcedure.input(loginSchema).mutation(async ({ input, ctx }) => {
@@ -21,19 +21,8 @@ export const registerRouter = router({
     const identifier =
       ctx.req.headers.get("x-real-ip") || ctx.req.headers.get("x-forwarded-for") || "local";
 
-    const rateLimitKey = `rate_limit:register:${identifier}`;
-    const currentCount = await redis.incr(rateLimitKey);
-    if (currentCount === 1) {
-      await redis.expire(rateLimitKey, 10);
-    }
-
-    if (currentCount > 5) {
-      const ttl = await redis.ttl(rateLimitKey);
-      throw new TRPCError({
-        code: "TOO_MANY_REQUESTS",
-        message: `Слишком много запросов. Попробуйте через ${ttl} секунд.`,
-      });
-    }
+    const rateLimitKey = redisKeys.registerRateLimit(identifier);
+    await checkRateLimit(ctx.redis, rateLimitKey, 5, 10);
 
     const existingUser = await ctx.prisma.user.findUnique({
       where: { email: input.email },
@@ -68,7 +57,7 @@ export const registerRouter = router({
         select: { id: true },
       });
 
-      const { tokenId } = await generateTokens(user.id); // заранее получить ID
+      const { tokenId } = await generateTokens(user.id);
 
       await tx.user.update({
         where: { id: user.id },
@@ -83,8 +72,7 @@ export const registerRouter = router({
     });
 
     try {
-      await resend.emails.send({
-        from: "no-reply@resend.dev",
+      ctx.sendEmail({
         to: input.email,
         subject: "Подтверждение почты",
         html: `
@@ -104,23 +92,7 @@ export const registerRouter = router({
 
     // Генерация токенов (второй раз для доступа, но с тем же userId)
     const { accessJwt, refreshJwt } = await generateTokens(userId);
-
-    const cookieOptions = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      sameSite: "strict" as const,
-    };
-
-    const cookieStore = await cookies();
-    cookieStore.set("token", accessJwt, {
-      ...cookieOptions,
-      maxAge: 15 * 60,
-    });
-    cookieStore.set("refreshToken", refreshJwt, {
-      ...cookieOptions,
-      maxAge: 60 * 60 * 24 * 7,
-    });
+    await setAuthCookies(accessJwt, refreshJwt);
 
     return {
       success: true,

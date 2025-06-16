@@ -1,4 +1,4 @@
-import { publicProcedure, router } from "@/trpc/trpc";
+import { publicProcedure } from "@/trpc/trpc";
 import { request2FASchema, TwoFAOutputSchema } from "@/shared/validations/2fa";
 import { TRPCError } from "@trpc/server";
 import { redisKeys } from "@/lib/2fa/redis";

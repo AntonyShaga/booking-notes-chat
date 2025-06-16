@@ -2,7 +2,8 @@ import { publicProcedure, router } from "@/trpc/trpc";
 import { cookies } from "next/headers";
 import { TRPCError } from "@trpc/server";
 import jwt from "jsonwebtoken";
-import { randomUUID } from "node:crypto";
+import { generateTokens } from "@/lib/jwt";
+import { setAuthCookies } from "@/lib/auth/cookies";
 
 export const refreshTokenRouter = router({
   refreshToken: publicProcedure.mutation(async ({ ctx }) => {
@@ -87,16 +88,11 @@ export const refreshTokenRouter = router({
       }
 
       // 4. Генерируем новые токены
-      const newTokenId = randomUUID();
-      const tokenPayload = {
-        userId: user.id,
-        jti: newTokenId,
-      };
-
-      const [newAccessToken, newRefreshToken] = await Promise.all([
-        jwt.sign(tokenPayload, jwtSecret, { expiresIn: "15m" }),
-        jwt.sign({ ...tokenPayload, isRefresh: true }, jwtSecret, { expiresIn: "7d" }),
-      ]);
+      const {
+        accessJwt: newAccessToken,
+        refreshJwt: newRefreshToken,
+        tokenId: newTokenId,
+      } = await generateTokens(user.id);
 
       // 5. Обновляем список активных токенов
       await ctx.prisma.user.update({
@@ -111,22 +107,7 @@ export const refreshTokenRouter = router({
       });
 
       // 6. Устанавливаем куки
-      const cookieOptions = {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        path: "/",
-      };
-
-      cookieStore.set("token", newAccessToken, {
-        ...cookieOptions,
-        maxAge: 15 * 60,
-        sameSite: "strict",
-      });
-
-      cookieStore.set("refreshToken", newRefreshToken, {
-        ...cookieOptions,
-        maxAge: 60 * 60 * 24 * 7,
-      });
+      await setAuthCookies(newAccessToken, newRefreshToken);
 
       return { success: true, userId: user.id };
     } catch (error) {

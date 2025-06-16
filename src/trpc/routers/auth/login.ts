@@ -1,10 +1,11 @@
 import { publicProcedure } from "@/trpc/trpc";
 import { loginSchema } from "@/shared/validations/auth";
-import { redis } from "@/lib/redis";
 import { TRPCError } from "@trpc/server";
 import argon2 from "argon2";
 import { generateTokens } from "@/lib/jwt";
 import { setAuthCookies } from "@/lib/auth/cookies";
+import { redisKeys } from "@/lib/2fa/redis";
+import { checkRateLimit } from "@/lib/2fa/helpers";
 
 export const login = publicProcedure.input(loginSchema).mutation(async ({ input, ctx }) => {
   const user = await ctx.prisma.user.findUnique({
@@ -20,18 +21,8 @@ export const login = publicProcedure.input(loginSchema).mutation(async ({ input,
   const identifier =
     ctx.req.headers.get("x-real-ip") || ctx.req.headers.get("x-forwarded-for") || "local";
 
-  const rateLimitKey = `rate_limit:login:${identifier}`;
-  const currentCount = await redis.incr(rateLimitKey);
-  if (currentCount === 1) {
-    await redis.expire(rateLimitKey, 10);
-  }
-  if (currentCount > 5) {
-    const ttl = await redis.ttl(rateLimitKey);
-    throw new TRPCError({
-      code: "TOO_MANY_REQUESTS",
-      message: `Слишком много запросов. Попробуйте через ${ttl} секунд.`,
-    });
-  }
+  const rateLimitKey = redisKeys.loginRateLimit(identifier);
+  await checkRateLimit(ctx.redis, rateLimitKey, 5, 10);
 
   if (!user) {
     throw new TRPCError({
@@ -71,7 +62,8 @@ export const login = publicProcedure.input(loginSchema).mutation(async ({ input,
   }
 
   if (user.twoFactorEnabled) {
-    await ctx.redis.set(`2fa:status:${user.id}`, "waiting", "EX", 300); // 5 минут
+    const twoFactorStatusKey = redisKeys.twoFactorStatus(user.id);
+    await ctx.redis.set(twoFactorStatusKey, "waiting", "EX", 300);
     return { requires2FA: true, userId: user.id };
   }
 
