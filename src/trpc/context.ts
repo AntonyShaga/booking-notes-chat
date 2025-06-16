@@ -31,7 +31,7 @@ export const createContext = async (opts: FetchCreateContextFnOptions) => {
             email: true,
             name: true,
             picture: true,
-            activeRefreshTokens: true, // если ты используешь
+            activeRefreshTokens: true,
           },
         });
       }
