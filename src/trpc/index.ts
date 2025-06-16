@@ -1,11 +1,12 @@
 import { router } from "./trpc";
-import { authRouter } from "./routers/auth";
+
 import { registerRouter } from "@/trpc/routers/register";
 import { verifyEmailRouter } from "@/trpc/routers/verifyEmail";
 import { logoutRouter } from "@/trpc/routers/logoutRouter";
 import { getEmailStatusRout } from "@/trpc/routers/getEmailStatus";
 import { twoFARouter } from "@/trpc/routers/2fa/twoFARouter";
 import { refreshTokenRouter } from "@/trpc/routers/refresh-token";
+import { authRouter } from "@/trpc/routers/auth/auth";
 
 export const appRouter = router({
   auth: authRouter,
