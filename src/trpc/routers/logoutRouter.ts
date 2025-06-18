@@ -9,7 +9,6 @@ export const logoutRouter = router({
     const refreshToken = cookieStore.get("refreshToken")?.value;
 
     if (!refreshToken) {
-      // Даже если куки нет, считаем, что пользователь вышел
       return { success: true, message: "Выход выполнен" };
     }
 
@@ -35,7 +34,6 @@ export const logoutRouter = router({
         });
       }
 
-      // Удаляем токен из базы
       await ctx.prisma.user.update({
         where: { id: decoded.userId },
         data: {
@@ -45,11 +43,9 @@ export const logoutRouter = router({
         },
       });
     } catch (err) {
-      // В случае ошибки всё равно удалим куки, но залогируем ошибку
       console.error("Ошибка при logout:", err);
     }
 
-    // Удаляем куки
     cookieStore.set("token", "", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",

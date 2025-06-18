@@ -4,7 +4,6 @@ import { TRPCError } from "@trpc/server";
 import { redis } from "@/lib/redis";
 import { randomUUID } from "node:crypto";
 import { addHours } from "date-fns";
-import { resend } from "@/lib/resend";
 
 export const verifyEmailRouter = router({
   verifyEmail: protectedProcedure
@@ -59,7 +58,6 @@ export const verifyEmailRouter = router({
         });
       }
 
-      // 🛡️ Cooldown (30 секунд между отправками)
       const cooldownKey = `resend:cooldown:${userId}`;
       const isOnCooldown = await redis.get(cooldownKey);
 
@@ -125,8 +123,7 @@ export const verifyEmailRouter = router({
       });
 
       try {
-        await resend.emails.send({
-          from: "no-reply@resend.dev",
+        ctx.sendEmail({
           to: email,
           subject: "Подтвердите ваш email",
           html: `

@@ -10,10 +10,9 @@ export default function VerifyPending() {
   const [lastSentAt, setLastSentAt] = useState<number | null>(null);
   const [cooldownLeft, setCooldownLeft] = useState(0);
 
-  // Добавляем запрос для проверки статуса email
   const { data: emailStatus, refetch: refetchEmailStatus } =
     trpc.getEmailStatus.getEmailStatus.useQuery(undefined, {
-      refetchInterval: 3000, // Проверяем каждые 3 секунд
+      refetchInterval: 3000,
     });
 
   const { mutate: resend, isLoading } = trpc.verifyEmail.resendVerificationEmail.useMutation({
@@ -28,7 +27,6 @@ export default function VerifyPending() {
 
   const refreshToken = trpc.refreshToken.refreshToken.useMutation();
 
-  // Если email верифицирован, перенаправляем пользователя
   useEffect(() => {
     if (emailStatus?.verified) {
       toast.success("Email успешно подтвержден!");
@@ -36,7 +34,6 @@ export default function VerifyPending() {
     }
   }, [emailStatus, router]);
 
-  // Обновляем оставшийся кулдаун каждую секунду
   useEffect(() => {
     if (!lastSentAt) return;
 
@@ -58,7 +55,6 @@ export default function VerifyPending() {
     refreshToken.mutate(undefined, {
       onSuccess: () => {
         resend();
-        // После повторной отправки обновляем статус email
         refetchEmailStatus();
       },
       onError: (err) => {

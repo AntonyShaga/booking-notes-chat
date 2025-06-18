@@ -5,6 +5,31 @@ import jwt from "jsonwebtoken";
 import { generateTokens } from "@/lib/jwt";
 import { setAuthCookies } from "@/lib/auth/cookies";
 
+/**
+ * A tRPC router that handles refreshing access and refresh tokens via a valid refresh token.
+ *
+ * @remarks
+ * This endpoint:
+ * - Extracts the refresh token from cookies
+ * - Validates and verifies the token structure and signature
+ * - Ensures the token is still active in the database
+ * - Revokes the old token and issues a new access/refresh pair
+ * - Updates the user's active tokens in the database
+ * - Sets new cookies for authentication
+ *
+ * @throws TRPCError with appropriate messages for:
+ * - Missing or malformed token
+ * - Invalid or revoked token
+ * - Missing environment variables
+ * - User not found
+ * - Token verification errors
+ *
+ * @example
+ * const result = await trpc.refreshTokenRouter.refreshToken.mutate();
+ * if (result.success) {
+ *   console.log("Tokens refreshed for user:", result.userId);
+ * }
+ */
 export const refreshTokenRouter = router({
   refreshToken: publicProcedure.mutation(async ({ ctx }) => {
     const cookieStore = await cookies();
@@ -13,7 +38,7 @@ export const refreshTokenRouter = router({
     if (!refreshToken) {
       throw new TRPCError({
         code: "BAD_REQUEST",
-        message: "Refresh token is missing from cookies",
+        message: "Отсутствует refresh токен в куках",
       });
     }
 
@@ -21,27 +46,24 @@ export const refreshTokenRouter = router({
     if (!jwtSecret) {
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: "JWT secret is not configured",
+        message: "Секрет JWT не сконфигурирован",
       });
     }
 
     try {
-      // 1. Декодируем без проверки
       const decoded = jwt.decode(refreshToken) as {
         userId?: string;
         jti?: string;
         isRefresh?: boolean;
       } | null;
 
-      // Валидация структуры токена
       if (!decoded?.userId || !decoded.jti || !decoded.isRefresh) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Invalid refresh token structure",
+          message: "Неверная структура refresh токена",
         });
       }
 
-      // 2. Проверяем пользователя и активные токены
       const user = await ctx.prisma.user.findUnique({
         where: { id: decoded.userId },
         select: { id: true, activeRefreshTokens: true },
@@ -50,19 +72,17 @@ export const refreshTokenRouter = router({
       if (!user) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "User not found",
+          message: "Пользователь не найден",
         });
       }
 
-      // Проверяем, не отозван ли токен
       if (!user.activeRefreshTokens.includes(decoded.jti)) {
         throw new TRPCError({
           code: "UNAUTHORIZED",
-          message: "Refresh token is revoked",
+          message: "Refresh токен отозван",
         });
       }
 
-      // 3. Проверяем подпись (игнорируя срок действия)
       try {
         const verified = jwt.verify(refreshToken, jwtSecret, { ignoreExpiration: true }) as {
           userId: string;
@@ -70,31 +90,28 @@ export const refreshTokenRouter = router({
           isRefresh: boolean;
         };
 
-        // Дополнительная проверка соответствия payload
         if (verified.userId !== decoded.userId || verified.jti !== decoded.jti) {
           throw new TRPCError({
             code: "UNAUTHORIZED",
-            message: "Token payload mismatch",
+            message: "Несовпадение данных токена",
           });
         }
       } catch (verifyError) {
         if (verifyError instanceof jwt.JsonWebTokenError) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Invalid token signature",
+            message: "Неверная подпись токена",
           });
         }
         throw verifyError;
       }
 
-      // 4. Генерируем новые токены
       const {
         accessJwt: newAccessToken,
         refreshJwt: newRefreshToken,
         tokenId: newTokenId,
       } = await generateTokens(user.id);
 
-      // 5. Обновляем список активных токенов
       await ctx.prisma.user.update({
         where: { id: user.id },
         data: {
@@ -106,7 +123,6 @@ export const refreshTokenRouter = router({
         },
       });
 
-      // 6. Устанавливаем куки
       await setAuthCookies(newAccessToken, newRefreshToken);
 
       return { success: true, userId: user.id };
@@ -117,7 +133,7 @@ export const refreshTokenRouter = router({
 
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: "Failed to refresh token",
+        message: "Не удалось обновить токены",
         cause: error,
       });
     }

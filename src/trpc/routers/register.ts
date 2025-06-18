@@ -39,7 +39,6 @@ export const registerRouter = router({
     const verificationToken = randomUUID();
     const verificationTokenExpires = addHours(new Date(), 24);
 
-    // Удаляем старых неподтвержденных юзеров
     await ctx.prisma.user.deleteMany({
       where: {
         email: input.email,
@@ -90,7 +89,6 @@ export const registerRouter = router({
       });
     }
 
-    // Генерация токенов (второй раз для доступа, но с тем же userId)
     const { accessJwt, refreshJwt } = await generateTokens(userId);
     await setAuthCookies(accessJwt, refreshJwt);
 
