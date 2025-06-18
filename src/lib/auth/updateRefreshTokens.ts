@@ -5,7 +5,7 @@ export async function updateActiveRefreshTokens(
   currentTokens: string[] = [],
   newTokenId: string
 ) {
-  const tokens = [...(currentTokens || []).slice(-4), newTokenId]; // максимум 5 токенов
+  const tokens = [...(currentTokens || []).slice(-4), newTokenId];
   await prisma.user.update({
     where: { id: userId },
     data: {

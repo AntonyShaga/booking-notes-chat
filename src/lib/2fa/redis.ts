@@ -9,4 +9,5 @@ export const redisKeys = {
   // Rate Limiting
   loginRateLimit: (ip: string) => `rate_limit:login:${ip}`,
   registerRateLimit: (ip: string) => `rate_limit:register:${ip}`,
+  resendVerificationRateLimit: (userId: string) => `rate_limit:resend:${userId}`,
 };

@@ -29,7 +29,6 @@ export const enable2FA = protectedProcedure
       });
     }
 
-    // Очистка прошлых данных
     await ctx.redis.del(attemptsKey);
     await ctx.prisma.user.update({
       where: { id: user.id },

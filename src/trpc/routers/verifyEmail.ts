@@ -2,8 +2,10 @@ import { protectedProcedure, router } from "@/trpc/trpc";
 import z from "zod";
 import { TRPCError } from "@trpc/server";
 import { redis } from "@/lib/redis";
-import { randomUUID } from "node:crypto";
 import { addHours } from "date-fns";
+import { generateTokenId } from "@/lib/jwt";
+import { redisKeys } from "@/lib/2fa/redis";
+import { checkRateLimit } from "@/lib/2fa/helpers";
 
 export const verifyEmailRouter = router({
   verifyEmail: protectedProcedure
@@ -58,32 +60,8 @@ export const verifyEmailRouter = router({
         });
       }
 
-      const cooldownKey = `resend:cooldown:${userId}`;
-      const isOnCooldown = await redis.get(cooldownKey);
+      await checkRateLimit(redis, redisKeys.resendVerificationRateLimit(userId), 3, 3600);
 
-      if (isOnCooldown) {
-        throw new TRPCError({
-          code: "TOO_MANY_REQUESTS",
-          message: "Пожалуйста, подождите немного перед повторной отправкой письма.",
-        });
-      }
-
-      // Устанавливаем cooldown (TTL 30 сек)
-      await redis.set(cooldownKey, "1", "EX", 30);
-
-      // 🧪 Rate-limiting (3 письма в час)
-      const rateLimitKey = `rate_limit:resend:${userId}`;
-      const currentCount = await redis.incr(rateLimitKey);
-      if (currentCount > 3) {
-        const ttl = await redis.ttl(rateLimitKey);
-        throw new TRPCError({
-          code: "TOO_MANY_REQUESTS",
-          message: `Слишком много запросов. Попробуйте через ${ttl} секунд.`,
-        });
-      }
-      await redis.expire(rateLimitKey, 3600); // 1 час TTL
-
-      // 🔍 Проверяем пользователя
       const user = await ctx.prisma.user.findUnique({
         where: { id: userId },
         select: { id: true, emailVerified: true, isActive: true },
@@ -110,8 +88,7 @@ export const verifyEmailRouter = router({
         });
       }
 
-      // ✉️ Генерация токена и отправка письма
-      const newToken = randomUUID();
+      const newToken = generateTokenId();
       const expiresAt = addHours(new Date(), 24);
 
       await ctx.prisma.user.update({
@@ -127,12 +104,12 @@ export const verifyEmailRouter = router({
           to: email,
           subject: "Подтвердите ваш email",
           html: `
-        <p>Для подтверждения email перейдите по ссылке:</p>
-        <a href="${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${newToken}">
-          Подтвердить Email
-        </a>
-        <p>Ссылка действительна 24 часа.</p>
-      `,
+          <p>Для подтверждения email перейдите по ссылке:</p>
+          <a href="${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${newToken}">
+            Подтвердить Email
+          </a>
+          <p>Ссылка действительна 24 часа.</p>
+        `,
         });
 
         console.log(`[VERIFY_EMAIL] Письмо отправлено: ${email}`);

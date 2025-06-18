@@ -62,7 +62,6 @@ export const verify2FAAfterLogin = publicProcedure
       }
     }
 
-    // Всё ок, удаляем redis ключ и авторизуем
     await ctx.redis.del(redisKey);
 
     const { tokenId, refreshJwt, accessJwt } = await generateTokens(user.id);
