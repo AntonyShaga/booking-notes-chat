@@ -25,12 +25,10 @@ export default function VerifyPending() {
     },
   });
 
-  const refreshToken = trpc.refreshToken.refreshToken.useMutation();
-
   useEffect(() => {
     if (emailStatus?.verified) {
       toast.success("Email успешно подтвержден!");
-      router.push("/"); // или на другую страницу
+      router.push("/");
     }
   }, [emailStatus, router]);
 
@@ -52,15 +50,8 @@ export default function VerifyPending() {
   }, [lastSentAt]);
 
   const handleResend = () => {
-    refreshToken.mutate(undefined, {
-      onSuccess: () => {
-        resend();
-        refetchEmailStatus();
-      },
-      onError: (err) => {
-        toast.error(err.message);
-      },
-    });
+    resend();
+    refetchEmailStatus();
   };
 
   return (
