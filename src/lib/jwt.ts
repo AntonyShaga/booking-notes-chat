@@ -1,34 +1,27 @@
 import { randomUUID } from "node:crypto";
 import jwt from "jsonwebtoken";
+import { PrismaClient } from "@prisma/client";
 
 /**
- * Generates a unique token identifier (JTI) using UUID v4.
- *
- * @returns {string} A unique token ID.
+ * Генерирует уникальный идентификатор токена (JTI)
  */
 export function generateTokenId(): string {
   return randomUUID();
 }
 
 /**
- * Asynchronously generates a pair of JWT tokens: access and refresh.
+ * Асинхронно генерирует пару JWT токенов: access и refresh, включая роль пользователя в payload.
  *
- * @param {string} userId - The user's unique identifier (used as the `sub` claim).
- * @returns {Promise<{
- *   accessJwt: string,
- *   refreshJwt: string,
- *   tokenId: string
- * }>} An object containing the access token, refresh token, and token ID (JTI).
+ * @param userId - Идентификатор пользователя (используется в `sub`)
+ * @param prismaClient - Экземпляр PrismaClient (внедряется извне для тестируемости)
+ * @returns Объект с accessJwt, refreshJwt и JTI токена
  *
- * @throws {Error} If the JWT_SECRET environment variable is not defined.
- *
- * @example
- * const tokens = await generateTokens("user_123");
- * console.log(tokens.accessJwt); // JWT access token
- * console.log(tokens.refreshJwt); // JWT refresh token
- * console.log(tokens.tokenId);   // Unique token ID (JTI)
+ * @throws Ошибка, если переменная окружения `JWT_SECRET` не задана или пользователь не найден
  */
-export async function generateTokens(userId: string): Promise<{
+export async function generateTokens(
+  userId: string,
+  prismaClient: PrismaClient
+): Promise<{
   accessJwt: string;
   refreshJwt: string;
   tokenId: string;
@@ -36,14 +29,23 @@ export async function generateTokens(userId: string): Promise<{
   const JWT_SECRET = process.env.JWT_SECRET!;
   if (!JWT_SECRET) throw new Error("❌ JWT_SECRET is not defined");
 
+  const user = await prismaClient.user.findUnique({
+    where: { id: userId },
+    select: { role: true },
+  });
+
+  if (!user?.role) {
+    throw new Error("❌ Пользователь не найден или у него нет роли");
+  }
+
   const tokenId = generateTokenId();
 
   const [accessJwt, refreshJwt] = await Promise.all([
-    jwt.sign({ sub: userId, jti: tokenId }, JWT_SECRET, {
+    jwt.sign({ sub: userId, jti: tokenId, role: user.role }, JWT_SECRET, {
       expiresIn: "15m",
       algorithm: "HS256",
     }),
-    jwt.sign({ sub: userId, jti: tokenId, isRefresh: true }, JWT_SECRET, {
+    jwt.sign({ sub: userId, jti: tokenId, isRefresh: true, role: user.role }, JWT_SECRET, {
       expiresIn: "7d",
       algorithm: "HS256",
     }),

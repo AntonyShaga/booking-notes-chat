@@ -67,7 +67,7 @@ export const login = publicProcedure.input(loginSchema).mutation(async ({ input,
     return { requires2FA: true, userId: user.id };
   }
 
-  const { tokenId, refreshJwt, accessJwt } = await generateTokens(user.id);
+  const { tokenId, refreshJwt, accessJwt } = await generateTokens(user.id, ctx.prisma);
   await setAuthCookies(accessJwt, refreshJwt);
 
   try {

@@ -56,7 +56,7 @@ export const registerRouter = router({
         select: { id: true },
       });
 
-      const { tokenId } = await generateTokens(user.id);
+      const { tokenId } = await generateTokens(user.id, ctx.prisma);
 
       await tx.user.update({
         where: { id: user.id },
@@ -89,7 +89,7 @@ export const registerRouter = router({
       });
     }
 
-    const { accessJwt, refreshJwt } = await generateTokens(userId);
+    const { accessJwt, refreshJwt } = await generateTokens(userId, ctx.prisma);
     await setAuthCookies(accessJwt, refreshJwt);
 
     return {

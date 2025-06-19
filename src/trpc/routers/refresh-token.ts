@@ -110,7 +110,7 @@ export const refreshTokenRouter = router({
         accessJwt: newAccessToken,
         refreshJwt: newRefreshToken,
         tokenId: newTokenId,
-      } = await generateTokens(user.id);
+      } = await generateTokens(user.id, ctx.prisma);
 
       await ctx.prisma.user.update({
         where: { id: user.id },

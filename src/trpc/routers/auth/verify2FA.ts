@@ -64,7 +64,7 @@ export const verify2FAAfterLogin = publicProcedure
 
     await ctx.redis.del(redisKey);
 
-    const { tokenId, refreshJwt, accessJwt } = await generateTokens(user.id);
+    const { tokenId, refreshJwt, accessJwt } = await generateTokens(user.id, ctx.prisma);
     await setAuthCookies(accessJwt, refreshJwt);
 
     try {
