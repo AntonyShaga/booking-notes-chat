@@ -40,7 +40,6 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Invalid state parameter" }, { status: 400 });
     }
 
-    // 🚀 Обмен кода на токены
     const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -112,7 +111,7 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const { tokenId, refreshJwt, accessJwt } = await generateTokens(user.id);
+    const { tokenId, refreshJwt, accessJwt } = await generateTokens(user.id, prisma);
 
     await prisma.user.update({
       where: { id: user.id },

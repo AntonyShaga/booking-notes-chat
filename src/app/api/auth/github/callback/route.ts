@@ -91,7 +91,7 @@ export async function GET(req: NextRequest) {
     });
 
     // Генерация JWT токенов
-    const { tokenId, refreshJwt, accessJwt } = await generateTokens(user.id);
+    const { tokenId, refreshJwt, accessJwt } = await generateTokens(user.id, prisma);
 
     // Обновление refresh токенов
     await updateActiveRefreshTokens(user.id, user.activeRefreshTokens, tokenId);

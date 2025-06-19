@@ -22,7 +22,6 @@ export default async function middleware(req: NextRequest) {
     console.log(userRole);
     console.log("✅ JWT валиден", payload);
 
-    // 🔐 Пример: ограничить доступ к /admin
     if (pathname.startsWith("/admin") && userRole !== "admin") {
       console.warn("⛔ Доступ запрещён: недостаточно прав");
       return NextResponse.redirect(new URL("/", req.url));
