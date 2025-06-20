@@ -1,10 +1,10 @@
-import { publicProcedure, router } from "@/trpc/trpc";
+import { protectedProcedure, router } from "@/trpc/trpc";
 import { cookies } from "next/headers";
 import { TRPCError } from "@trpc/server";
 import jwt from "jsonwebtoken";
 
 export const logoutRouter = router({
-  logout: publicProcedure.mutation(async ({ ctx }) => {
+  logout: protectedProcedure.mutation(async ({ ctx }) => {
     const cookieStore = await cookies();
     const refreshToken = cookieStore.get("refreshToken")?.value;
 
@@ -38,7 +38,7 @@ export const logoutRouter = router({
         where: { id: decoded.userId },
         data: {
           activeRefreshTokens: {
-            set: ctx.session?.user?.activeRefreshTokens?.filter((id) => id !== decoded.jti) ?? [],
+            set: ctx.session.user.activeRefreshTokens?.filter((id) => id !== decoded.jti) ?? [],
           },
         },
       });
