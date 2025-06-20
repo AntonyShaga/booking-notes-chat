@@ -23,7 +23,14 @@ export async function tryRefreshToken({
 
   const user = await prisma.user.findUnique({
     where: { id: decoded.sub },
-    select: { id: true, email: true, activeRefreshTokens: true, name: true, picture: true },
+    select: {
+      id: true,
+      email: true,
+      activeRefreshTokens: true,
+      name: true,
+      picture: true,
+      role: true,
+    },
   });
 
   if (!user || !user.activeRefreshTokens.includes(decoded.jti)) {

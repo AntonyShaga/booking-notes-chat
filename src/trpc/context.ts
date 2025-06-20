@@ -32,6 +32,7 @@ export const createContext = async (opts: FetchCreateContextFnOptions) => {
             name: true,
             picture: true,
             activeRefreshTokens: true,
+            role: true,
           },
         });
       }
@@ -41,7 +42,7 @@ export const createContext = async (opts: FetchCreateContextFnOptions) => {
       if (refreshToken) {
         try {
           const result = await tryRefreshToken({ refreshToken, jwtSecret });
-          console.log("🔁 Успешное обновление токенов:", result);
+          console.log("🔁 Успешное обновление токенов:");
           user = result.user;
 
           resHeaders.append(
@@ -59,11 +60,10 @@ export const createContext = async (opts: FetchCreateContextFnOptions) => {
     }
   }
 
-  // Если access токена не было, но есть refresh токен
   if (!accessToken && refreshToken && jwtSecret && !user) {
     try {
       const result = await tryRefreshToken({ refreshToken, jwtSecret });
-      console.log("🔁 Успешное обновление токенов (без access):", result);
+      console.log("🔁 Успешное обновление токенов (без access):");
       user = result.user;
 
       resHeaders.append(

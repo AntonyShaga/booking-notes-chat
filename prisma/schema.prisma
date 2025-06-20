@@ -25,7 +25,7 @@ model User {
   activeRefreshTokens      String[]
   role                     Role      @default(CUSTOMER)
   twoFactorEnabled         Boolean   @default(false)
-  twoFactorSecret          String? // TOTP-секрет
+  twoFactorSecret          String?
 
   @@map("users")
 }

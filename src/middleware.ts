@@ -19,10 +19,9 @@ export default async function middleware(req: NextRequest) {
     const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
     const { payload } = await jwtVerify(token, secret);
     const userRole = payload.role as string | undefined;
-    console.log(userRole);
-    console.log("✅ JWT валиден", payload);
+    console.log("✅ JWT валиден");
 
-    if (pathname.startsWith("/admin") && userRole !== "admin") {
+    if (pathname.startsWith("/dashboard") && userRole !== "admin") {
       console.warn("⛔ Доступ запрещён: недостаточно прав");
       return NextResponse.redirect(new URL("/", req.url));
     }
