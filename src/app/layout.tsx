@@ -27,7 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased p-5 `}>
         <Providers>
           <Header />
           <div className="flex flex-col gap-2 container mx-auto  justify-center">{children}</div>
