@@ -63,7 +63,7 @@ export const createContext = async (opts: FetchCreateContextFnOptions) => {
   if (!accessToken && refreshToken && jwtSecret && !user) {
     try {
       const result = await tryRefreshToken({ refreshToken, jwtSecret });
-      console.log("🔁 Успешное обновление токенов (без access):");
+      console.log("🔁 Успешное обновление токенов (без access)");
       user = result.user;
 
       resHeaders.append(
