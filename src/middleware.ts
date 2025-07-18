@@ -5,7 +5,7 @@ import { jwtVerify } from "jose";
 export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  const publicPaths = ["/", "/signin", "/signup", "/verify-email", "/2fa"];
+  const publicPaths = ["/", "/signing", "/signup", "/verify-email", "/2fa"];
   if (publicPaths.includes(pathname)) {
     return NextResponse.next();
   }
@@ -13,7 +13,7 @@ export default async function middleware(req: NextRequest) {
   const token = req.cookies.get("token")?.value;
   if (!token) {
     console.log("❌ Токен отсутствует");
-    return NextResponse.redirect(new URL("/signin", req.url));
+    return NextResponse.redirect(new URL("/signing", req.url));
   }
   try {
     const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
@@ -29,7 +29,7 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.next();
   } catch (error) {
     console.error("❌ JWT ошибка:", error);
-    return NextResponse.redirect(new URL("/signin", req.url));
+    return NextResponse.redirect(new URL("/signing", req.url));
   }
 }
 

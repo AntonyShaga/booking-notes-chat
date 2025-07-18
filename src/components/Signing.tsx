@@ -8,7 +8,7 @@ import Button from "@/components/ui/Button";
 import { FcGoogle } from "react-icons/fc";
 import { Github } from "lucide-react";
 
-export default function SignIn() {
+export default function Signing() {
   const router = useRouter();
   const loginMutation = trpc.auth.login.useMutation({
     onSuccess: (data) => {
@@ -55,7 +55,7 @@ export default function SignIn() {
           </Button>
         </div>
 
-        <AuthForm mode="Signin" onSubmit={handleLogin} isLoading={loginMutation.isLoading} />
+        <AuthForm mode="Signing" onSubmit={handleLogin} isLoading={loginMutation.isLoading} />
 
         <div className="min-h-[2.5rem] mt-4 transition-opacity duration-200">
           {loginMutation.error && (
