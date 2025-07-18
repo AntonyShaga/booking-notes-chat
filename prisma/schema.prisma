@@ -22,7 +22,7 @@ model User {
   emailVerified            Boolean   @default(false)
   verificationToken        String?   @unique
   verificationTokenExpires DateTime?
-  activeRefreshTokens      String[]
+  activeRefreshTokens      String[]  @default([])
   role                     Role      @default(CUSTOMER)
   twoFactorEnabled         Boolean   @default(false)
   twoFactorSecret          String?

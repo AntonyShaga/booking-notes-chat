@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema } from "@/shared/validations/auth";
 
 interface AuthFormProps {
-  mode: "Signin" | "Signup";
+  mode: "Signing" | "Signup";
   resetForm?: boolean;
   isLoading?: boolean;
   onSubmit: (data: { email: string; password: string }) => void;
@@ -31,7 +31,7 @@ export default function AuthForm({ mode, resetForm, onSubmit, isLoading }: AuthF
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
       <h2 className="text-2xl font-bold mb-4 text-center">
-        {mode === "Signin" ? "Вход" : "Регистрация"}
+        {mode === "Signing" ? "Вход" : "Регистрация"}
       </h2>
 
       <div>
@@ -69,7 +69,7 @@ export default function AuthForm({ mode, resetForm, onSubmit, isLoading }: AuthF
         disabled={isLoading}
         className="w-full py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring focus:ring-blue-300"
       >
-        {mode === "Signin" ? "Войти" : "Зарегистрироваться"}
+        {mode === "Signing" ? "Войти" : "Зарегистрироваться"}
       </button>
     </form>
   );

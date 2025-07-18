@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import jwt from "jsonwebtoken";
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 
 /**
  * Генерирует уникальный идентификатор токена (JTI)
@@ -20,7 +20,7 @@ export function generateTokenId(): string {
  */
 export async function generateTokens(
   userId: string,
-  prismaClient: PrismaClient
+  prismaClient: PrismaClient | Prisma.TransactionClient
 ): Promise<{
   accessJwt: string;
   refreshJwt: string;
@@ -33,7 +33,7 @@ export async function generateTokens(
     where: { id: userId },
     select: { role: true },
   });
-
+  console.log(user);
   if (!user?.role) {
     throw new Error("❌ Пользователь не найден или у него нет роли");
   }

@@ -55,8 +55,8 @@ export const registerRouter = router({
         },
         select: { id: true },
       });
-
-      const { tokenId } = await generateTokens(user.id, ctx.prisma);
+      console.log(user);
+      const { tokenId } = await generateTokens(user.id, tx);
 
       await tx.user.update({
         where: { id: user.id },
