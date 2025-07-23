@@ -3,10 +3,10 @@ import { loginSchema } from "@/shared/validations/auth";
 import { TRPCError } from "@trpc/server";
 import argon2 from "argon2";
 import { generateTokens } from "@/lib/jwt";
-import { setAuthCookies } from "@/lib/auth/cookies";
 import { redisKeys } from "@/lib/2fa/redis";
 import { checkRateLimit } from "@/lib/2fa/helpers";
 import { getTranslation } from "@/lib/errors/messages";
+import { updateUserLoginAndSetCookies } from "@/lib/auth/updateUserLogin";
 
 export const login = publicProcedure.input(loginSchema).mutation(async ({ input, ctx }) => {
   const user = await ctx.prisma.user.findUnique({
@@ -62,26 +62,16 @@ export const login = publicProcedure.input(loginSchema).mutation(async ({ input,
 
   const { tokenId, refreshJwt, accessJwt } = await generateTokens(user.id, ctx.prisma);
 
-  try {
-    await ctx.prisma.$transaction(async (tx) => {
-      await tx.user.update({
-        where: { id: user.id },
-        data: {
-          lastLogin: new Date(),
-          updatedAt: new Date(),
-          activeRefreshTokens: { push: tokenId },
-        },
-      });
-    });
-    await setAuthCookies(accessJwt, refreshJwt);
-    return { message: "Вход выполнен успешно", userId: user.id };
-  } catch (error) {
-    console.error(getTranslation(ctx.lang, "login.lastLoginUpdateError"), error);
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: getTranslation(ctx.lang, "login.serverConfigError"),
-    });
-  }
+  await updateUserLoginAndSetCookies({
+    userId: user.id,
+    tokenId,
+    accessJwt,
+    refreshJwt,
+    prisma: ctx.prisma,
+    lang: ctx.lang,
+  });
+
+  return { message: "Вход выполнен успешно", userId: user.id };
 });
 
 export const loginRouter = { login };

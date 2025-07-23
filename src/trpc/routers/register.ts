@@ -8,16 +8,10 @@ import { generateTokens } from "@/lib/jwt";
 import { redisKeys } from "@/lib/2fa/redis";
 import { checkRateLimit } from "@/lib/2fa/helpers";
 import { setAuthCookies } from "@/lib/auth/cookies";
+import { getTranslation } from "@/lib/errors/messages";
 
 export const registerRouter = router({
   register: publicProcedure.input(loginSchema).mutation(async ({ input, ctx }) => {
-    if (!ctx.req) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Request object is missing",
-      });
-    }
-
     const identifier =
       ctx.req.headers.get("x-real-ip") || ctx.req.headers.get("x-forwarded-for") || "local";
 
@@ -31,7 +25,7 @@ export const registerRouter = router({
     if (existingUser) {
       throw new TRPCError({
         code: "CONFLICT",
-        message: "Пользователь с таким email уже существует",
+        message: getTranslation(ctx.lang, "register.emailConflict"),
       });
     }
 
@@ -55,7 +49,7 @@ export const registerRouter = router({
         },
         select: { id: true },
       });
-      console.log(user);
+
       const { tokenId } = await generateTokens(user.id, tx);
 
       await tx.user.update({
@@ -74,17 +68,13 @@ export const registerRouter = router({
       ctx.sendEmail({
         to: input.email,
         subject: "Подтверждение почты",
-        html: `
-          <p>Здравствуйте! Подтвердите свою почту, перейдя по ссылке:</p>
-          <a href="${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${verificationToken}">
-            Подтвердить Email
-          </a>`,
+        token: verificationToken,
       });
     } catch (error) {
-      console.error("Ошибка отправки email:", error);
+      console.error(getTranslation(ctx.lang, "email.sendErrorLog"), error);
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: "Не удалось отправить письмо для подтверждения почты",
+        message: getTranslation(ctx.lang, "email.sendError"),
         cause: error instanceof Error ? error.message : String(error),
       });
     }
@@ -94,7 +84,7 @@ export const registerRouter = router({
 
     return {
       success: true,
-      message: "Регистрация прошла успешно. Подтвердите почту.",
+      message: getTranslation(ctx.lang, "register.success"),
     };
   }),
 });

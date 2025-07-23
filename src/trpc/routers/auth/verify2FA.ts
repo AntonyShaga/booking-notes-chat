@@ -4,8 +4,9 @@ import { TRPCError } from "@trpc/server";
 import { verifyEmail2FA } from "@/lib/2fa/email";
 import { authenticator } from "otplib";
 import { generateTokens } from "@/lib/jwt";
-import { setAuthCookies } from "@/lib/auth/cookies";
 import { verify2FAAfterLoginSchema } from "@/shared/validations/auth";
+import { getTranslation } from "@/lib/errors/messages";
+import { updateUserLoginAndSetCookies } from "@/lib/auth/updateUserLogin";
 
 export const verify2FAAfterLogin = publicProcedure
   .input(verify2FAAfterLoginSchema)
@@ -17,7 +18,7 @@ export const verify2FAAfterLogin = publicProcedure
     if (!pending) {
       throw new TRPCError({
         code: "UNAUTHORIZED",
-        message: "Сессия подтверждения 2FA истекла или недействительна",
+        message: getTranslation(ctx.lang, "verify2FA.sessionExpired"),
       });
     }
 
@@ -33,10 +34,15 @@ export const verify2FAAfterLogin = publicProcedure
     if (!user) {
       throw new TRPCError({
         code: "BAD_REQUEST",
-        message: "Пользователь не найден",
+        message: getTranslation(ctx.lang, "verify2FA.userNotFound"),
       });
     }
-
+    if (!user.isActive) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: getTranslation(ctx.lang, "verify2FA.accountNotActive"),
+      });
+    }
     if (method === "email") {
       await verifyEmail2FA({
         redis: ctx.redis,
@@ -49,7 +55,7 @@ export const verify2FAAfterLogin = publicProcedure
       if (!user.twoFactorSecret) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "2FA не настроена",
+          message: getTranslation(ctx.lang, "verify2FA.notConfigured"),
         });
       }
 
@@ -57,7 +63,7 @@ export const verify2FAAfterLogin = publicProcedure
       if (!isValid) {
         throw new TRPCError({
           code: "UNAUTHORIZED",
-          message: "Неверный код 2FA",
+          message: getTranslation(ctx.lang, "verify2FA.invalidCode"),
         });
       }
     }
@@ -65,21 +71,15 @@ export const verify2FAAfterLogin = publicProcedure
     await ctx.redis.del(redisKey);
 
     const { tokenId, refreshJwt, accessJwt } = await generateTokens(user.id, ctx.prisma);
-    await setAuthCookies(accessJwt, refreshJwt);
 
-    try {
-      await ctx.prisma.user.update({
-        where: { id: user.id },
-        data: {
-          lastLogin: new Date(),
-          updatedAt: new Date(),
-          activeRefreshTokens: { push: tokenId },
-        },
-      });
-    } catch (error) {
-      console.error("Ошибка обновления lastLogin:", error);
-    }
-
+    await updateUserLoginAndSetCookies({
+      userId: user.id,
+      tokenId,
+      accessJwt,
+      refreshJwt,
+      prisma: ctx.prisma,
+      lang: ctx.lang,
+    });
     return {
       message: "2FA подтверждена. Вход выполнен.",
       userId: user.id,

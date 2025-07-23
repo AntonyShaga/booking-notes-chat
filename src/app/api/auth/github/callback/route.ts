@@ -22,7 +22,6 @@ export async function GET(req: NextRequest) {
     const code = url.searchParams.get("code");
     const state = url.searchParams.get("state");
 
-    // Проверка state и codeVerifier
     const cookieState = req.cookies.get("oauth_state")?.value;
     const codeVerifier = req.cookies.get("oauth_code_verifier")?.value;
 
@@ -30,7 +29,6 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Invalid authentication request" }, { status: 400 });
     }
 
-    // Обмен кода на токен
     const tokenRes = await fetch("https://github.com/login/oauth/access_token", {
       method: "POST",
       headers: {
@@ -52,7 +50,6 @@ export async function GET(req: NextRequest) {
     const accessToken = tokenData.access_token;
     if (!accessToken) throw new Error("No access token received");
 
-    // Получение данных пользователя
     const [userRes, emailRes] = await Promise.all([
       fetch("https://api.github.com/user", {
         headers: { Authorization: `Bearer ${accessToken}` },
@@ -71,7 +68,6 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Invalid user data from GitHub" }, { status: 400 });
     }
 
-    // Создание/обновление пользователя
     const user = await prisma.user.upsert({
       where: { email: primaryEmail },
       update: {
@@ -90,16 +86,12 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // Генерация JWT токенов
     const { tokenId, refreshJwt, accessJwt } = await generateTokens(user.id, prisma);
 
-    // Обновление refresh токенов
     await updateActiveRefreshTokens(user.id, user.activeRefreshTokens, tokenId);
 
-    // Работа с куками
     await setAuthCookies(accessJwt, refreshJwt);
 
-    // Создаем редирект и чистим временные куки
     const response = NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}`);
     response.cookies.delete("oauth_state");
     response.cookies.delete("oauth_code_verifier");
@@ -112,7 +104,6 @@ export async function GET(req: NextRequest) {
       `${process.env.NEXT_PUBLIC_APP_URL}/login?error=github_auth_failed`
     );
 
-    // Очищаем все куки при ошибке
     response.cookies.delete("oauth_state");
     response.cookies.delete("oauth_code_verifier");
     response.cookies.delete("token");

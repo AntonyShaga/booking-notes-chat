@@ -22,7 +22,7 @@ type Languages = keyof MessagesMap;
 /**
  * Recursively extracts all dot-separated keys from a nested object.
  *
- * For example, `{ a: { b: { c: "..." } } }` → `"a" | "a.b" | "a.b.c"`
+ * For example, `{ a: { b: { c: "..."}}}` → `"a" | "a.b" | "a.b.c"`
  */
 type DeepKeys<T> = T extends object
   ? {
@@ -97,7 +97,7 @@ function getNestedValue<TObj extends object, TPath extends string>(
  *
  * @example
  * getTranslation("en", "home.title"); // → "Welcome"
- * getTranslation("ru", "dashboard.stats.users", "Нет данных"); // → "Пользователи" или "Нет данных"
+ * getTranslation("ru", "dashboard.stats.users");
  */
 export const getTranslation = <TKey extends MessageKey>(
   lang: Languages,

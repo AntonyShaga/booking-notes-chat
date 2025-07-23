@@ -103,13 +103,7 @@ export const verifyEmailRouter = router({
         ctx.sendEmail({
           to: email,
           subject: "Подтвердите ваш email",
-          html: `
-          <p>Для подтверждения email перейдите по ссылке:</p>
-          <a href="${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${newToken}">
-            Подтвердить Email
-          </a>
-          <p>Ссылка действительна 24 часа.</p>
-        `,
+          token: newToken,
         });
 
         console.log(`[VERIFY_EMAIL] Письмо отправлено: ${email}`);

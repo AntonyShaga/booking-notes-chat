@@ -10,9 +10,8 @@ export const checkRateLimit = async (
   const type = await redis.type(key);
 
   if (type !== "none" && type !== "string") {
-    // Предупреждение для дебага
     console.warn(`[RateLimit] Redis key "${key}" has invalid type: ${type}`);
-    // Удаляем неправильный тип
+
     await redis.del(key);
   }
 

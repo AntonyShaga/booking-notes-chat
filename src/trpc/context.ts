@@ -7,8 +7,8 @@ import prisma from "@/lib/db";
 import { sendEmail } from "@/lib/sendEmail";
 import { redis } from "@/lib/redis";
 
-const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) {
+const jwtSecret = process.env.JWT_SECRET;
+if (!jwtSecret) {
   throw new Error("FATAL: JWT_SECRET environment variable is not defined!");
 }
 
@@ -20,7 +20,6 @@ export const createContext = async (opts: FetchCreateContextFnOptions) => {
   const lang: "en" | "ru" = acceptLanguage.split(",")[0]?.startsWith("ru") ? "ru" : "en";
   const accessToken = cookies.token;
   const refreshToken = cookies.refreshToken;
-  const jwtSecret = process.env.JWT_SECRET;
 
   let user = null;
 
