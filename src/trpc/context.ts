@@ -7,11 +7,17 @@ import prisma from "@/lib/db";
 import { sendEmail } from "@/lib/sendEmail";
 import { redis } from "@/lib/redis";
 
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error("FATAL: JWT_SECRET environment variable is not defined!");
+}
+
 export const createContext = async (opts: FetchCreateContextFnOptions) => {
   const { req, resHeaders } = opts;
   const cookieHeader = req.headers.get("cookie");
   const cookies = cookieHeader ? parse(cookieHeader) : {};
-
+  const acceptLanguage = opts.req.headers.get("accept-language") ?? "";
+  const lang: "en" | "ru" = acceptLanguage.split(",")[0]?.startsWith("ru") ? "ru" : "en";
   const accessToken = cookies.token;
   const refreshToken = cookies.refreshToken;
   const jwtSecret = process.env.JWT_SECRET;
@@ -81,6 +87,7 @@ export const createContext = async (opts: FetchCreateContextFnOptions) => {
 
   return {
     prisma,
+    lang,
     req,
     resHeaders,
     session: user ? { user } : null,

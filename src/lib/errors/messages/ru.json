@@ -1,0 +1,10 @@
+{
+  "login": {
+    "invalidCredentials": "Неверный email или пароль.",
+    "oauthOnly": "Аккаунт зарегистрирован через Google или GitHub. Для входа используйте Google или GitHub.",
+    "userNotFound": "Пользователь с таким email не найден.",
+    "accountNotActive": "Учетная запись неактивна. Подтвердите почту.",
+    "serverConfigError": "Ошибка конфигурации сервера.",
+    "lastLoginUpdateError": "Ошибка обновления последнего входа."
+  }
+}

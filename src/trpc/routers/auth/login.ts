@@ -6,6 +6,7 @@ import { generateTokens } from "@/lib/jwt";
 import { setAuthCookies } from "@/lib/auth/cookies";
 import { redisKeys } from "@/lib/2fa/redis";
 import { checkRateLimit } from "@/lib/2fa/helpers";
+import { getTranslation } from "@/lib/errors/messages";
 
 export const login = publicProcedure.input(loginSchema).mutation(async ({ input, ctx }) => {
   const user = await ctx.prisma.user.findUnique({
@@ -27,21 +28,21 @@ export const login = publicProcedure.input(loginSchema).mutation(async ({ input,
   if (!user) {
     throw new TRPCError({
       code: "NOT_FOUND",
-      message: "Пользователь с таким email не найден",
+      message: getTranslation(ctx.lang, "login.userNotFound"),
     });
   }
 
   if (!user.isActive) {
     throw new TRPCError({
       code: "FORBIDDEN",
-      message: "Учетная запись неактивна. Подтвердите почту.",
+      message: getTranslation(ctx.lang, "login.accountNotActive"),
     });
   }
 
   if (!user.password) {
     throw new TRPCError({
       code: "FORBIDDEN",
-      message: "Аккаунт зарегистрирован через Google. Войдите через Google.",
+      message: getTranslation(ctx.lang, "login.oauthOnly"),
     });
   }
 
@@ -49,15 +50,7 @@ export const login = publicProcedure.input(loginSchema).mutation(async ({ input,
   if (!isPasswordCorrect) {
     throw new TRPCError({
       code: "UNAUTHORIZED",
-      message: "Неверный пароль",
-    });
-  }
-
-  const jwtSecret = process.env.JWT_SECRET;
-  if (!jwtSecret) {
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Ошибка конфигурации сервера",
+      message: getTranslation(ctx.lang, "login.invalidCredentials"),
     });
   }
 
@@ -68,22 +61,27 @@ export const login = publicProcedure.input(loginSchema).mutation(async ({ input,
   }
 
   const { tokenId, refreshJwt, accessJwt } = await generateTokens(user.id, ctx.prisma);
-  await setAuthCookies(accessJwt, refreshJwt);
 
   try {
-    await ctx.prisma.user.update({
-      where: { id: user.id },
-      data: {
-        lastLogin: new Date(),
-        updatedAt: new Date(),
-        activeRefreshTokens: { push: tokenId },
-      },
+    await ctx.prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: user.id },
+        data: {
+          lastLogin: new Date(),
+          updatedAt: new Date(),
+          activeRefreshTokens: { push: tokenId },
+        },
+      });
     });
+    await setAuthCookies(accessJwt, refreshJwt);
+    return { message: "Вход выполнен успешно", userId: user.id };
   } catch (error) {
-    console.error("Ошибка обновления lastLogin:", error);
+    console.error(getTranslation(ctx.lang, "login.lastLoginUpdateError"), error);
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: getTranslation(ctx.lang, "login.serverConfigError"),
+    });
   }
-
-  return { message: "Вход выполнен успешно", userId: user.id };
 });
 
 export const loginRouter = { login };

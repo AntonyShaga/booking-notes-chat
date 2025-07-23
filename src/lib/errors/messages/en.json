@@ -1,0 +1,10 @@
+{
+  "login": {
+    "invalidCredentials": "Invalid email or password.",
+    "oauthOnly": "Account registered via Google or GitHub. Please sign in using Google or GitHub.",
+    "userNotFound": "User with this email not found.",
+    "accountNotActive": "Account is inactive. Please confirm your email.",
+    "serverConfigError": "Server configuration error.",
+    "lastLoginUpdateError": "Error updating last login."
+  }
+}
