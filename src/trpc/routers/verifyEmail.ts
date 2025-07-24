@@ -6,6 +6,7 @@ import { addHours } from "date-fns";
 import { generateTokenId } from "@/lib/jwt";
 import { redisKeys } from "@/lib/2fa/redis";
 import { checkRateLimit } from "@/lib/2fa/helpers";
+import { getTranslation } from "@/lib/errors/messages";
 
 export const verifyEmailRouter = router({
   verifyEmail: protectedProcedure
@@ -15,25 +16,28 @@ export const verifyEmailRouter = router({
         where: { verificationToken: input.token },
       });
       if (!user) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "Недействительный токен" });
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: getTranslation(ctx.lang, "errors.verifyEmail.invalidToken"),
+        });
       }
 
       if (!user.isActive) {
         throw new TRPCError({
           code: "FORBIDDEN",
-          message: "Учётная запись деактивирована",
+          message: getTranslation(ctx.lang, "errors.verifyEmail.accountDeactivated"),
         });
       }
 
       if (user.verificationTokenExpires && new Date() > user.verificationTokenExpires) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Срок действия токена истёк. Запросите новый.",
+          message: getTranslation(ctx.lang, "errors.verifyEmail.tokenExpired"),
         });
       }
 
       if (user.emailVerified) {
-        return { message: "Email уже подтверждён." };
+        return { message: getTranslation(ctx.lang, "errors.verifyEmail.alreadyVerified") };
       }
 
       await ctx.prisma.user.update({
@@ -45,7 +49,7 @@ export const verifyEmailRouter = router({
         },
       });
 
-      return { message: "Email успешно подтверждён" };
+      return { message: getTranslation(ctx.lang, "errors.verifyEmail.alreadyVerified") };
     }),
   resendVerificationEmail: protectedProcedure
     .output(z.object({ success: z.boolean(), message: z.string() }))
@@ -56,7 +60,7 @@ export const verifyEmailRouter = router({
       if (!email) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Email отсутствует в сессии пользователя",
+          message: getTranslation(ctx.lang, "errors.verifyEmail.emailMissingInSession"),
         });
       }
 
@@ -70,21 +74,21 @@ export const verifyEmailRouter = router({
       if (!user) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Пользователь с таким email не найден",
+          message: getTranslation(ctx.lang, "errors.verifyEmail.userNotFound"),
         });
       }
 
       if (user.emailVerified) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Email уже подтверждён. Письмо не будет отправлено повторно.",
+          message: getTranslation(ctx.lang, "errors.verifyEmail.alreadyVerifiedResend"),
         });
       }
 
       if (!user.isActive) {
         throw new TRPCError({
           code: "FORBIDDEN",
-          message: "Учётная запись деактивирована",
+          message: getTranslation(ctx.lang, "errors.verifyEmail.accountDeactivated"),
         });
       }
 
@@ -110,10 +114,10 @@ export const verifyEmailRouter = router({
 
         return { success: true, message: "Письмо отправлено!" };
       } catch (error) {
-        console.error("[VERIFY_EMAIL] Ошибка отправки:", error);
+        console.error(getTranslation(ctx.lang, "errors.email.resendErrorLog"), error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Не удалось отправить письмо",
+          message: getTranslation(ctx.lang, "errors.email.sendError"),
         });
       }
     }),

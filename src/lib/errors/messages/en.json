@@ -25,7 +25,21 @@
     },
     "email": {
       "sendError": "Failed to send confirmation email. Please try again later.",
-      "sendErrorLog": "Error sending email:"
+      "sendErrorLog": "Error sending email:",
+      "subject": "Confirm your email",
+      "alreadyVerified": "Email already verified.",
+      "successfullyVerified": "Email successfully verified",
+      "resendSuccess": "Email sent!",
+      "resendErrorLog": "Error sending:"
+    },
+    "verifyEmail": {
+      "invalidToken": "Invalid token.",
+      "accountDeactivated": "Account deactivated.",
+      "tokenExpired": "Token has expired. Please request a new one.",
+      "alreadyVerified": "Email already verified.",
+      "emailMissingInSession": "Email is missing from user session.",
+      "userNotFound": "User with this email not found.",
+      "alreadyVerifiedResend": "Email already verified. The email will not be sent again."
     }
   }
 }

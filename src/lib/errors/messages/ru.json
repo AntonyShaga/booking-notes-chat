@@ -25,7 +25,20 @@
     },
     "email": {
       "sendError": "Не удалось отправить письмо для подтверждения почты. Пожалуйста, попробуйте позже.",
-      "sendErrorLog": "Ошибка отправки email:"
+      "sendErrorLog": "Ошибка отправки email:",
+      "subject": "Подтвердите ваш email",
+      "alreadyVerified": "Email уже подтверждён.",
+      "successfullyVerified": "Email успешно подтверждён",
+      "resendErrorLog": "Ошибка отправки:"
+    },
+    "verifyEmail": {
+      "invalidToken": "Недействительный токен",
+      "accountDeactivated": "Учётная запись деактивирована",
+      "tokenExpired": "Срок действия токена истёк. Запросите новый.",
+      "alreadyVerified": "Email уже подтверждён.",
+      "emailMissingInSession": "Email отсутствует в сессии пользователя",
+      "userNotFound": "Пользователь с таким email не найден",
+      "alreadyVerifiedResend": "Email уже подтверждён. Письмо не будет отправлено повторно."
     }
   }
 }
