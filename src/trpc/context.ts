@@ -6,7 +6,6 @@ import { tryRefreshToken } from "@/lib/auth/refreshToken";
 import prisma from "@/lib/db";
 import { sendEmail } from "@/lib/sendEmail";
 import { redis } from "@/lib/redis";
-import { getTranslation } from "@/lib/errors/messages";
 
 const jwtSecret = process.env.JWT_SECRET;
 if (!jwtSecret) {
