@@ -14,7 +14,7 @@ export async function startEmail2FA({
 }: {
   redis: RedisClient;
   user: { id: string; email: string };
-  sendEmail: (opts: { to: string; subject: string; html: string }) => Promise<void>;
+  sendEmail: (opts: { to: string; subject: string; token: string }) => Promise<void>;
 }) {
   const cooldownKey = redisKeys.cooldown(user.id);
   const pendingKey = redisKeys.pending(user.id);
@@ -44,7 +44,7 @@ export async function startEmail2FA({
   await sendEmail({
     to: user.email,
     subject: "Ваш код подтверждения 2FA",
-    html: `<p>Ваш код подтверждения: <strong>${token}</strong></p>`,
+    token: `<p>Ваш код подтверждения: <strong>${token}</strong></p>`,
   });
 
   return { method: "email" };
