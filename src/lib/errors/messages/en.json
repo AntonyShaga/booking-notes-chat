@@ -1,30 +1,31 @@
 {
-  "login": {
-    "invalidCredentials": "Неверный email или пароль.",
-    "oauthOnly": "Аккаунт зарегистрирован через Google или GitHub. Для входа используйте Google или GitHub.",
-    "userNotFound": "Пользователь с таким email не найден.",
-    "accountNotActive": "Учетная запись неактивна. Подтвердите почту.",
-    "serverConfigError": "Ошибка конфигурации сервера."
-  },
-  "verify2FA": {
-    "sessionExpired": "Сессия подтверждения 2FA истекла или недействительна.",
-    "userNotFound": "Пользователь не найден.",
-    "accountNotActive": "Аккаунт неактивен. Пожалуйста, свяжитесь с поддержкой.",
-    "notConfigured": "2FA не настроена для этого пользователя.",
-    "invalidCode": "Неверный код 2FA.",
-    "success": "2FA подтверждена. Вход выполнен."
-  },
-  "common": {
-    "lastLoginUpdateError": "Ошибка обновления статуса последнего входа.",
-    "serverConfigError": "Произошла ошибка конфигурации сервера. Пожалуйста, попробуйте позже.",
-    "requestMissing": "Объект запроса отсутствует."
-  },
-  "register": {
-    "emailConflict": "Пользователь с таким email уже существует.",
-    "success": "Регистрация прошла успешно. Подтвердите почту."
-  },
-  "email": {
-    "sendError": "Не удалось отправить письмо для подтверждения почты. Пожалуйста, попробуйте позже.",
-    "sendErrorLog": "Ошибка отправки email:"
+  "errors": {
+    "login": {
+      "invalidCredentials": "Invalid email or password.",
+      "oauthOnly": "Account registered via Google or GitHub. Please use Google or GitHub to log in.",
+      "userNotFound": "User with this email not found.",
+      "accountNotActive": "Account is inactive. Please confirm your email.",
+      "serverConfigError": "Server configuration error."
+    },
+    "verify2FA": {
+      "sessionExpired": "2FA verification session expired or is invalid.",
+      "userNotFound": "User not found.",
+      "accountNotActive": "Account is inactive. Please contact support.",
+      "notConfigured": "2FA is not configured for this user.",
+      "invalidCode": "Invalid 2FA code.",
+      "success": "2FA confirmed. Login successful."
+    },
+    "common": {
+      "lastLoginUpdateError": "Error updating last login status.",
+      "serverConfigError": "A server configuration error occurred. Please try again later.",
+      "requestMissing": "Request object is missing."
+    },
+    "register": {
+      "emailConflict": "User with this email already exists.",
+    },
+    "email": {
+      "sendError": "Failed to send confirmation email. Please try again later.",
+      "sendErrorLog": "Error sending email:"
+    }
   }
 }

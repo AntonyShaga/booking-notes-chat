@@ -18,7 +18,7 @@ export const verify2FAAfterLogin = publicProcedure
     if (!pending) {
       throw new TRPCError({
         code: "UNAUTHORIZED",
-        message: getTranslation(ctx.lang, "verify2FA.sessionExpired"),
+        message: getTranslation(ctx.lang, "errors.verify2FA.sessionExpired"),
       });
     }
 
@@ -34,13 +34,13 @@ export const verify2FAAfterLogin = publicProcedure
     if (!user) {
       throw new TRPCError({
         code: "BAD_REQUEST",
-        message: getTranslation(ctx.lang, "verify2FA.userNotFound"),
+        message: getTranslation(ctx.lang, "errors.verify2FA.userNotFound"),
       });
     }
     if (!user.isActive) {
       throw new TRPCError({
         code: "FORBIDDEN",
-        message: getTranslation(ctx.lang, "verify2FA.accountNotActive"),
+        message: getTranslation(ctx.lang, "errors.verify2FA.accountNotActive"),
       });
     }
     if (method === "email") {
@@ -55,7 +55,7 @@ export const verify2FAAfterLogin = publicProcedure
       if (!user.twoFactorSecret) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: getTranslation(ctx.lang, "verify2FA.notConfigured"),
+          message: getTranslation(ctx.lang, "errors.verify2FA.notConfigured"),
         });
       }
 
@@ -63,7 +63,7 @@ export const verify2FAAfterLogin = publicProcedure
       if (!isValid) {
         throw new TRPCError({
           code: "UNAUTHORIZED",
-          message: getTranslation(ctx.lang, "verify2FA.invalidCode"),
+          message: getTranslation(ctx.lang, "errors.verify2FA.invalidCode"),
         });
       }
     }

@@ -34,10 +34,10 @@ export async function updateUserLoginAndSetCookies({
     });
     await setAuthCookies(accessJwt, refreshJwt);
   } catch (error) {
-    console.error(getTranslation(lang, "common.lastLoginUpdateError"), error);
+    console.error(getTranslation(lang, "errors.common.lastLoginUpdateError"), error);
     throw new TRPCError({
       code: "INTERNAL_SERVER_ERROR",
-      message: getTranslation(lang, "common.serverConfigError"),
+      message: getTranslation(lang, "errors.common.serverConfigError"),
     });
   }
 }

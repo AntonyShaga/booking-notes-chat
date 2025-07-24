@@ -18,7 +18,6 @@ export const login = publicProcedure.input(loginSchema).mutation(async ({ input,
       twoFactorEnabled: true,
     },
   });
-
   const identifier =
     ctx.req.headers.get("x-real-ip") || ctx.req.headers.get("x-forwarded-for") || "local";
 
@@ -28,21 +27,21 @@ export const login = publicProcedure.input(loginSchema).mutation(async ({ input,
   if (!user) {
     throw new TRPCError({
       code: "NOT_FOUND",
-      message: getTranslation(ctx.lang, "login.userNotFound"),
+      message: getTranslation(ctx.lang, "errors.login.userNotFound"),
     });
   }
 
   if (!user.isActive) {
     throw new TRPCError({
       code: "FORBIDDEN",
-      message: getTranslation(ctx.lang, "login.accountNotActive"),
+      message: getTranslation(ctx.lang, "errors.login.accountNotActive"),
     });
   }
 
   if (!user.password) {
     throw new TRPCError({
       code: "FORBIDDEN",
-      message: getTranslation(ctx.lang, "login.oauthOnly"),
+      message: getTranslation(ctx.lang, "errors.login.oauthOnly"),
     });
   }
 
@@ -50,7 +49,7 @@ export const login = publicProcedure.input(loginSchema).mutation(async ({ input,
   if (!isPasswordCorrect) {
     throw new TRPCError({
       code: "UNAUTHORIZED",
-      message: getTranslation(ctx.lang, "login.invalidCredentials"),
+      message: getTranslation(ctx.lang, "errors.login.invalidCredentials"),
     });
   }
 

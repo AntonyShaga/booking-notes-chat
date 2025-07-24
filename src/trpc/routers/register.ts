@@ -25,7 +25,7 @@ export const registerRouter = router({
     if (existingUser) {
       throw new TRPCError({
         code: "CONFLICT",
-        message: getTranslation(ctx.lang, "register.emailConflict"),
+        message: getTranslation(ctx.lang, "errors.register.emailConflict"),
       });
     }
 
@@ -71,10 +71,10 @@ export const registerRouter = router({
         token: verificationToken,
       });
     } catch (error) {
-      console.error(getTranslation(ctx.lang, "email.sendErrorLog"), error);
+      console.error(getTranslation(ctx.lang, "errors.email.sendErrorLog"), error);
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: getTranslation(ctx.lang, "email.sendError"),
+        message: getTranslation(ctx.lang, "errors.email.sendError"),
         cause: error instanceof Error ? error.message : String(error),
       });
     }
@@ -84,7 +84,7 @@ export const registerRouter = router({
 
     return {
       success: true,
-      message: getTranslation(ctx.lang, "register.success"),
+      message: "Регистрация прошла успешно. Подтвердите почту.",
     };
   }),
 });

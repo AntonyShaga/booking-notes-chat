@@ -96,7 +96,7 @@ function getNestedValue<TObj extends object, TPath extends string>(
  * @returns {string} - The translation string or a fallback (default or error message).
  *
  * @example
- * getTranslation("en", "home.title"); // → "Welcome"
+ * getTranslation("en", "home.title");
  * getTranslation("ru", "dashboard.stats.users");
  */
 export const getTranslation = <TKey extends MessageKey>(
