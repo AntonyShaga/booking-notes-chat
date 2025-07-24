@@ -21,7 +21,7 @@
       "requestMissing": "Request object is missing."
     },
     "register": {
-      "emailConflict": "User with this email already exists.",
+      "emailConflict": "User with this email already exists."
     },
     "email": {
       "sendError": "Failed to send confirmation email. Please try again later.",
