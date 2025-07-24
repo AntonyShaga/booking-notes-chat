@@ -49,7 +49,7 @@ export const verifyEmailRouter = router({
         },
       });
 
-      return { message: getTranslation(ctx.lang, "errors.verifyEmail.alreadyVerified") };
+      return { message: getTranslation(ctx.lang, "errors.email.successfullyVerified") };
     }),
   resendVerificationEmail: protectedProcedure
     .output(z.object({ success: z.boolean(), message: z.string() }))
@@ -104,7 +104,7 @@ export const verifyEmailRouter = router({
       });
 
       try {
-        ctx.sendEmail({
+        await ctx.sendEmail({
           to: email,
           subject: "Подтвердите ваш email",
           token: newToken,
