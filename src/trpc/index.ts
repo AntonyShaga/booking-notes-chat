@@ -1,5 +1,5 @@
 import { router } from "./trpc";
-
+import { getEmailStatusRout } from "@/trpc/routers/getEmailStatus";
 import { registerRouter } from "@/trpc/routers/register";
 import { verifyEmailRouter } from "@/trpc/routers/verifyEmail";
 import { logoutRouter } from "@/trpc/routers/logoutRouter";
@@ -10,6 +10,7 @@ export const appRouter = router({
   auth: authRouter,
   register: registerRouter,
   verifyEmail: verifyEmailRouter,
+  getEmailStatus: getEmailStatusRout,
   logout: logoutRouter,
   twoFA: twoFARouter,
 });
