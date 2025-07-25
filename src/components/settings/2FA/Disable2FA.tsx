@@ -1,7 +1,7 @@
 "use client";
 import { trpc } from "@/utils/trpc";
 import { toast } from "sonner";
-import Button from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 
 export default function Disable2FA({ onSuccess }: { onSuccess: () => void }) {
   const disable = trpc.twoFA.disable2FA.useMutation({

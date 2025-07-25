@@ -2,7 +2,7 @@
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import CopyIcon from "@/components/icons/CopyIcon";
-import Button from "@/components/ui/Button";
+import { Button } from "@react-email/button";
 
 export default function ManualSecretSection({ secret }: { secret: string | null }) {
   const copyToClipboard = () => {

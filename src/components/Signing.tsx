@@ -4,9 +4,7 @@ import Link from "next/link";
 import { trpc } from "@/utils/trpc";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import Button from "@/components/ui/Button";
-import { FcGoogle } from "react-icons/fc";
-import { Github } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function Signing() {
   const router = useRouter();
@@ -41,15 +39,13 @@ export default function Signing() {
         <div className={"flex justify-between"}>
           <Button
             onClick={handleGoogleLogin}
-            className="flex items-center bg-white text-black border border-gray-300 text-sm   rounded-xl shadow hover:shadow-md transition-all"
-            leftIcon={<FcGoogle size={24} />}
+            className="flex items-center    rounded-xl shadow hover:shadow-md transition-all"
           >
             Войти через Google
           </Button>
           <Button
             onClick={handleGitleLogin}
-            className="flex items-center bg-white text-black border border-gray-300 text-sm   rounded-xl shadow hover:shadow-md transition-all"
-            leftIcon={<Github size={24} />}
+            className="flex items-center  text-sm   rounded-xl shadow hover:shadow-md transition-all"
           >
             Войти через Git
           </Button>
@@ -64,7 +60,7 @@ export default function Signing() {
         </div>
 
         <div className="text-center mt-4">
-          <Link href="/signup" className="text-blue-500 font-bold underline">
+          <Link href="/signup" className=" font-bold underline">
             Нет аккаунта? Зарегистрируйтесь
           </Link>
         </div>

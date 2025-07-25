@@ -3,10 +3,9 @@ import AuthForm from "@/components/AuthForm";
 import Link from "next/link";
 import { trpc } from "@/utils/trpc";
 import { useRouter } from "next/navigation";
-import { FcGoogle } from "react-icons/fc";
-import { Github } from "lucide-react";
 import { toast } from "sonner";
-import Button from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
+
 export default function SignUp() {
   const router = useRouter();
   const registerMutation = trpc.register.register.useMutation({
@@ -31,15 +30,13 @@ export default function SignUp() {
         <div className={"flex justify-between"}>
           <Button
             onClick={handleGoogleLogin}
-            className="flex items-center bg-white text-black border border-gray-300 text-sm   rounded-xl shadow hover:shadow-md transition-all"
-            leftIcon={<FcGoogle size={24} />}
+            className="flex items-center  text-sm   rounded-xl shadow hover:shadow-md transition-all"
           >
             Войти через Google
           </Button>
           <Button
             onClick={handleGitleLogin}
-            className="flex items-center bg-white text-black border border-gray-300 text-sm   rounded-xl shadow hover:shadow-md transition-all"
-            leftIcon={<Github size={24} />}
+            className="flex items-center  border  text-sm   rounded-xl shadow hover:shadow-md transition-all"
           >
             Войти через Git
           </Button>

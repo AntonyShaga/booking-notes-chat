@@ -23,7 +23,7 @@ export const logoutRouter = router({
 
     try {
       const decoded = jwt.verify(refreshToken, jwtSecret) as {
-        userId: string;
+        sub: string;
         jti: string;
         isRefresh?: boolean;
       };
@@ -34,9 +34,9 @@ export const logoutRouter = router({
           message: getTranslation(ctx.lang, "errors.logout.invalidRefreshToken"),
         });
       }
-
+      console.log(decoded);
       await ctx.prisma.user.update({
-        where: { id: decoded.userId },
+        where: { id: decoded.sub },
         data: {
           activeRefreshTokens: {
             set: ctx.session.user.activeRefreshTokens?.filter((id) => id !== decoded.jti) ?? [],

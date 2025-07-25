@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema } from "@/shared/validations/auth";
+import { Button } from "@/components/ui/button";
 
 interface AuthFormProps {
   mode: "Signing" | "Signup";
@@ -64,13 +65,13 @@ export default function AuthForm({ mode, resetForm, onSubmit, isLoading }: AuthF
         </div>
       </div>
 
-      <button
+      <Button
         type="submit"
         disabled={isLoading}
-        className="w-full py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring focus:ring-blue-300"
+        className="w-full py-2 text-white rounded-md  focus:outline-none focus:ring "
       >
         {mode === "Signing" ? "Войти" : "Зарегистрироваться"}
-      </button>
+      </Button>
     </form>
   );
 }

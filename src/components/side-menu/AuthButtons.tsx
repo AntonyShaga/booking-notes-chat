@@ -5,7 +5,7 @@ export function AuthButtons() {
   return (
     <div className={"flex flex-row gap-2"}>
       <Link href="/signup">signup</Link>
-      <Link href="/signin">signin</Link>
+      <Link href="/signing">signin</Link>
     </div>
   );
 }

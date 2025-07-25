@@ -1,6 +1,7 @@
 import Image from "next/image";
-import Button from "@/components/ui/Button";
+
 import CloseIcon from "@/components/icons/CloseIcon";
+import { Button } from "@/components/ui/button";
 type Props = {
   onClickToggle: () => void;
   userPicture: string | null;

@@ -1,11 +1,12 @@
 "use client";
 import { useState } from "react";
-import Button from "@/components/ui/Button";
+
 import { UserAvatar } from "./UserAvatar";
 import { LogoutButton } from "@/components/side-menu/LogoutButton";
 import { AuthButtons } from "@/components/side-menu/AuthButtons";
 import { SideMenuDrawer } from "@/components/side-menu/SideMenuDrawer";
 import { trpc } from "@/utils/trpc";
+import { Button } from "@/components/ui/button";
 
 type User = {
   name: string | null;

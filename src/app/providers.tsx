@@ -16,7 +16,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           fetch(url, options) {
             return fetch(url, {
               ...options,
-              credentials: "include", // 👈 Обязательно, чтобы куки отправлялись!
+              credentials: "include",
             });
           },
         }),
