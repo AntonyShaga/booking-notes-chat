@@ -2,6 +2,7 @@ import { protectedProcedure, router } from "@/trpc/trpc";
 import { cookies } from "next/headers";
 import { TRPCError } from "@trpc/server";
 import jwt from "jsonwebtoken";
+import { getTranslation } from "@/lib/errors/messages";
 
 export const logoutRouter = router({
   logout: protectedProcedure.mutation(async ({ ctx }) => {
@@ -16,7 +17,7 @@ export const logoutRouter = router({
     if (!jwtSecret) {
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: "JWT_SECRET не установлен в переменных окружения",
+        message: getTranslation(ctx.lang, "errors.logout.jwtSecretMissing"),
       });
     }
 
@@ -30,7 +31,7 @@ export const logoutRouter = router({
       if (!decoded.isRefresh) {
         throw new TRPCError({
           code: "UNAUTHORIZED",
-          message: "Неверный refresh токен",
+          message: getTranslation(ctx.lang, "errors.logout.invalidRefreshToken"),
         });
       }
 
@@ -44,6 +45,10 @@ export const logoutRouter = router({
       });
     } catch (err) {
       console.error("Ошибка при logout:", err);
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: getTranslation(ctx.lang, "errors.logout.errorLoggingOut"),
+      });
     }
 
     cookieStore.set("token", "", {

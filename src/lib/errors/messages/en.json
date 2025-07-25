@@ -40,6 +40,11 @@
       "emailMissingInSession": "Email is missing from user session.",
       "userNotFound": "User with this email not found.",
       "alreadyVerifiedResend": "Email already verified. The email will not be sent again."
+    },
+    "logout": {
+      "jwtSecretMissing": "JWT_SECRET is not set in environment variables.",
+      "invalidRefreshToken": "Invalid refresh token.",
+      "errorLoggingOut": "An error occurred during logout."
     }
   }
 }

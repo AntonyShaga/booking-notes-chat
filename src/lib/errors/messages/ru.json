@@ -39,6 +39,11 @@
       "emailMissingInSession": "Email отсутствует в сессии пользователя",
       "userNotFound": "Пользователь с таким email не найден",
       "alreadyVerifiedResend": "Email уже подтверждён. Письмо не будет отправлено повторно."
+    },
+    "logout": {
+      "jwtSecretMissing": "JWT_SECRET не установлен в переменных окружения",
+      "invalidRefreshToken": "Неверный refresh токен",
+      "errorLoggingOut": "Ошибка при выходе из аккаунта"
     }
   }
 }
