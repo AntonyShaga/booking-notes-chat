@@ -42,7 +42,7 @@ export default function Enable2FA({ onSuccess }: { onSuccess: () => void }) {
         <Button
           onClick={() => enable.mutate({ method })}
           disabled={enable.isLoading}
-          className="w-full bg-blue-600 text-white py-2 rounded mb-4"
+          className="w-full py-2 rounded mb-4"
         >
           {enable.isLoading ? "Генерация..." : "Получить код"}
         </Button>

@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { trpc } from "@/utils/trpc";
 import MethodSelector from "@/components/settings/2FA/enable2FA/MethodSelector";
-import Button from "@/components/ui/Button";
+
 import CodeVerificationSection from "@/components/settings/2FA/enable2FA/CodeVerificationSection";
+import { Button } from "@/components/ui/button";
 
 type TwoFAMethod = "qr" | "manual" | "email";
 
