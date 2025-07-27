@@ -60,9 +60,9 @@ export default function Signing() {
         </div>
 
         <div className="text-center mt-4">
-          <Link href="/signup" className=" font-bold underline">
-            Нет аккаунта? Зарегистрируйтесь
-          </Link>
+          <Button variant={"link"}>
+            <Link href="/signup">Нет аккаунта? Зарегистрируйтесь</Link>
+          </Button>
         </div>
       </div>
     </div>

@@ -53,9 +53,9 @@ export default function SignUp() {
         </div>
 
         <div className="text-center mt-4">
-          <Link href="/signing" className="text-blue-500 font-bold underline">
-            Есть аккаунт? Войти
-          </Link>
+          <Button variant={"link"}>
+            <Link href="/signing">Есть аккаунт? Войти</Link>
+          </Button>
         </div>
       </div>
     </div>
