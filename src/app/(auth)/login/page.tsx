@@ -1,5 +1,5 @@
-import { CardAuth } from "@/components/auth/CardAuth";
+import { AuthCard } from "@/components/auth/AuthCard";
 
 export default function SignInPage() {
-  return <CardAuth isLogin={true} />;
+  return <AuthCard isLogin={true} />;
 }

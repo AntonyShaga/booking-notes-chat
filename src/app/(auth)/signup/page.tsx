@@ -1,5 +1,5 @@
-import { CardAuth } from "@/components/auth/CardAuth";
+import { AuthCard } from "@/components/auth/AuthCard";
 
 export default function SignUpPage() {
-  return <CardAuth isLogin={false} />;
+  return <AuthCard isLogin={false} />;
 }

@@ -14,7 +14,7 @@ interface Props {
   isLogin: boolean;
 }
 
-export function CardAuth({ isLogin }: Props) {
+export function AuthCard({ isLogin }: Props) {
   const router = useRouter();
 
   const loginMutation = trpc.auth.login.useMutation({
