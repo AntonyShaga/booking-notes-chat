@@ -7,7 +7,7 @@ export function LogoutButton() {
   const logOut = trpc.logout.logout.useMutation({
     onSuccess: (data) => {
       toast.success(data.message);
-      window.location.href = "/signing";
+      window.location.href = "/login";
     },
   });
 

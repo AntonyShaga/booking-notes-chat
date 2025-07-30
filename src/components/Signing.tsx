@@ -1,5 +1,5 @@
 "use client";
-import AuthForm from "@/components/AuthForm";
+import AuthForm from "@/components/auth/auth-form/AuthForm";
 import Link from "next/link";
 import { trpc } from "@/utils/trpc";
 import { useRouter } from "next/navigation";
@@ -29,7 +29,7 @@ export default function Signing() {
   const handleGoogleLogin = () => {
     window.location.href = "/api/auth/google";
   };
-  const handleGitleLogin = () => {
+  const handleGitHubLogin = () => {
     window.location.href = "/api/auth/github";
   };
 
@@ -44,7 +44,7 @@ export default function Signing() {
             Войти через Google
           </Button>
           <Button
-            onClick={handleGitleLogin}
+            onClick={handleGitHubLogin}
             className="flex items-center  text-sm   rounded-xl shadow hover:shadow-md transition-all"
           >
             Войти через Git

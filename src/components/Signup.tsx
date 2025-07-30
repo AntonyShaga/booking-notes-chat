@@ -1,5 +1,5 @@
 "use client";
-import AuthForm from "@/components/AuthForm";
+import AuthForm from "@/components/auth/auth-form/AuthForm";
 import Link from "next/link";
 import { trpc } from "@/utils/trpc";
 import { useRouter } from "next/navigation";
