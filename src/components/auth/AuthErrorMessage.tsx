@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface AuthErrorMessageProps {
   error?: string;
@@ -8,15 +8,19 @@ interface AuthErrorMessageProps {
 
 export function AuthErrorMessage({ error }: AuthErrorMessageProps) {
   return (
-    <motion.p
-      key="auth-error"
-      initial={{ opacity: 0, y: -6 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -6 }}
-      transition={{ duration: 0.25 }}
-      className="text-center text-sm text-red-500"
-    >
-      {error}
-    </motion.p>
+    <AnimatePresence mode="wait" initial={false}>
+      {error && (
+        <motion.p
+          key="auth-error"
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.25, ease: "easeInOut" }}
+          className="text-center text-sm text-red-500"
+        >
+          {error}
+        </motion.p>
+      )}
+    </AnimatePresence>
   );
 }

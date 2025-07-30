@@ -55,7 +55,7 @@ export function AuthCard({ isLogin }: Props) {
     <motion.div
       layout
       transition={{ type: "spring", stiffness: 500, damping: 35 }}
-      className="flex items-start justify-center h-[calc(100vh-105px)] pt-20"
+      className="flex items-start justify-center h-[calc(100vh-105px)] pt-5  md:pt-20"
     >
       <motion.div
         layout
@@ -73,8 +73,6 @@ export function AuthCard({ isLogin }: Props) {
               onSubmit={handleOnClick}
               isLoading={loginMutation.isLoading}
             />
-
-            {/* AnimatePresence и motion.div отдельно */}
             <AnimatePresence mode="wait" initial={false}>
               {error && (
                 <motion.div
