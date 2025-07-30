@@ -8,7 +8,7 @@ import { trpc } from "@/utils/trpc";
 import { toast } from "sonner";
 import { AuthHeader } from "@/components/auth/AuthHeader";
 import { AuthErrorMessage } from "@/components/auth/AuthErrorMessage";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 interface Props {
   isLogin: boolean;
@@ -57,43 +57,24 @@ export function AuthCard({ isLogin }: Props) {
       transition={{ type: "spring", stiffness: 500, damping: 35 }}
       className="flex items-start justify-center h-[calc(100vh-105px)] pt-5  md:pt-20"
     >
-      <motion.div
-        layout
-        transition={{ layout: { duration: 0.3, ease: "easeInOut" } }}
-        className="w-80 md:w-96"
-      >
-        <Card className="overflow-hidden">
-          <CardHeader>
-            <AuthHeader isLogin={isLogin} />
-          </CardHeader>
+      <Card className="overflow-hidden w-80 md:w-96">
+        <CardHeader>
+          <AuthHeader isLogin={isLogin} />
+        </CardHeader>
 
-          <CardContent className="flex flex-col gap-2 justify-center">
-            <AuthForm
-              isLogin={isLogin}
-              onSubmit={handleOnClick}
-              isLoading={loginMutation.isLoading}
-            />
-            <AnimatePresence mode="wait" initial={false}>
-              {error && (
-                <motion.div
-                  key="error-wrapper"
-                  layout
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <AuthErrorMessage error={error} />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </CardContent>
+        <CardContent className="flex flex-col gap-2 justify-center">
+          <AuthForm
+            isLogin={isLogin}
+            onSubmit={handleOnClick}
+            isLoading={loginMutation.isLoading}
+          />
+          <AuthErrorMessage error={error} />
+        </CardContent>
 
-          <CardFooter className="flex-col gap-2">
-            <AuthProviders isLogin={isLogin} />
-          </CardFooter>
-        </Card>
-      </motion.div>
+        <CardFooter className="flex-col gap-2">
+          <AuthProviders isLogin={isLogin} />
+        </CardFooter>
+      </Card>
     </motion.div>
   );
 }

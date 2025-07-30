@@ -32,16 +32,16 @@ export function FormInput({
         className={error ? "border-red-500" : ""}
       />
 
-      <div className="min-h-[2.5rem] overflow-hidden">
+      <div className="overflow-hidden">
         <AnimatePresence mode="wait" initial={false}>
           {error && (
             <motion.p
-              key="error"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="text-sm text-red-500"
+              key="auth-error"
+              initial={{ opacity: 0, height: 0, overflow: "hidden" }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.25, ease: "easeInOut" }}
+              className="text-center text-sm text-red-500"
             >
               {error}
             </motion.p>
