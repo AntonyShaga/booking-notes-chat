@@ -34,7 +34,10 @@ export default function SidebarContainer({ user }: Props) {
             {user.picture ? (
               <UserAvatar picture={user.picture} name={user.name ?? "Пользователь"} />
             ) : (
-              <span className="w-8 h-8 bg-blue-400 rounded-full" role="img" aria-label="Аватар" />
+              <div>
+                <span className="w-8 h-8 bg-blue-400 rounded-full" role="img" aria-label="Аватар" />
+                <p>Пользователь</p>
+              </div>
             )}
           </Button>
           <LogoutButton />

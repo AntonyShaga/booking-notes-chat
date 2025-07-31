@@ -21,13 +21,13 @@ export default function CodeVerificationSection({
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.2 }}
-      className="mt-6 flex flex-col items-center justify-center gap-2"
+      className="mt-6 w-full flex flex-col items-center justify-center gap-2"
     >
       <InputOTPControlled code={code} setCode={setCode} />
       <Button
         onClick={onConfirm}
         disabled={isLoading || code.length !== 6}
-        className="w-full  text-white py-2 rounded"
+        className="w-full py-2 rounded"
       >
         {isLoading ? "Проверка..." : "Подтвердить"}
       </Button>

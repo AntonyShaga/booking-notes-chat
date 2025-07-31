@@ -48,7 +48,7 @@ export default function TwoFactorPage() {
   });
 
   return (
-    <div className="flex flex-col container mx-auto items-center justify-center min-h-screen px-4">
+    <div className="flex w-1/4 flex-col container mx-auto items-center justify-center min-h-screen px-4">
       <MethodSelector method={method} setMethod={setMethod} />
       <Button
         onClick={() => {
@@ -58,7 +58,7 @@ export default function TwoFactorPage() {
           }
           enable.mutate({ userId, method });
         }}
-        className="w-full bg-blue-600 text-white py-2 rounded mb-4"
+        className="w-full py-2 rounded mb-4"
         disabled={enable.isLoading}
       >
         {enable.isLoading ? "Генерация..." : "Получить код"}
