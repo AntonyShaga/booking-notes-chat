@@ -31,14 +31,7 @@ export default function SidebarContainer({ user }: Props) {
             variant={"link"}
             onClick={() => setToggle(!toggle)}
           >
-            {user.picture ? (
-              <UserAvatar picture={user.picture} name={user.name ?? "Пользователь"} />
-            ) : (
-              <div>
-                <span className="w-8 h-8 bg-blue-400 rounded-full" role="img" aria-label="Аватар" />
-                <p>Пользователь</p>
-              </div>
-            )}
+            <UserAvatar picture={user.picture ?? ""} name={user.name ?? "Пользователь"} />
           </Button>
           <LogoutButton />
         </>
