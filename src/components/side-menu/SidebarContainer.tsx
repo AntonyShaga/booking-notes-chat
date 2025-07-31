@@ -26,7 +26,11 @@ export default function SidebarContainer({ user }: Props) {
     <div className="relative z-50 flex justify-center gap-4">
       {user ? (
         <>
-          <Button className="flex items-center gap-2 bg-inherit" onClick={() => setToggle(!toggle)}>
+          <Button
+            className="flex items-center gap-2 "
+            variant={"link"}
+            onClick={() => setToggle(!toggle)}
+          >
             {user.picture ? (
               <UserAvatar picture={user.picture} name={user.name ?? "Пользователь"} />
             ) : (

@@ -1,4 +1,4 @@
-import VerifyPending from "@/components/VerifyPending";
+import VerifyPending from "@/components/verify/VerifyPending";
 
 export default function VerifyPage() {
   return <VerifyPending />;

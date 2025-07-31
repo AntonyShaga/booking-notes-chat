@@ -108,6 +108,7 @@ export const verifyEmailRouter = router({
           to: email,
           subject: "Подтвердите ваш email",
           token: newToken,
+          type: "verify",
         });
 
         console.log(`[VERIFY_EMAIL] Письмо отправлено: ${email}`);

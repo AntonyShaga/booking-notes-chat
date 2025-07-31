@@ -11,9 +11,5 @@ export function LogoutButton() {
     },
   });
 
-  return (
-    <Button className="bg-inherit" onClick={() => logOut.mutate()}>
-      Log Out
-    </Button>
-  );
+  return <Button onClick={() => logOut.mutate()}>Log Out</Button>;
 }

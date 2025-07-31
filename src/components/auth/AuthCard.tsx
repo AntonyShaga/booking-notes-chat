@@ -19,6 +19,7 @@ export function AuthCard({ isLogin }: Props) {
 
   const loginMutation = trpc.auth.login.useMutation({
     onSuccess: (data) => {
+      console.log(data);
       if (data.requires2FA) {
         sessionStorage.setItem("2fa_user_id", data.userId);
         router.push("/2fa");
