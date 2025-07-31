@@ -8,13 +8,11 @@ import { SideMenuDrawer } from "@/components/side-menu/SideMenuDrawer";
 import { trpc } from "@/utils/trpc";
 import { Button } from "@/components/ui/button";
 
-type User = {
-  name: string | null;
-  picture: string | null;
-};
-
 type Props = {
-  user: User;
+  user: {
+    name: string | null;
+    picture: string | null;
+  };
 };
 
 export default function SidebarContainer({ user }: Props) {
