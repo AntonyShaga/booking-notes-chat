@@ -2,29 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { OAuth2Client } from "google-auth-library";
 import { prisma } from "@/lib/prisma";
 import { redis } from "@/lib/redis";
-import { TRPCError } from "@trpc/server";
 import { setAuthCookies } from "@/lib/auth/cookies";
 import { generateTokens } from "@/lib/jwt";
+import { checkRateLimit } from "@/lib/2fa/helpers";
 
 export async function GET(req: NextRequest) {
   try {
     const identifier =
       req.headers.get("x-real-ip") || req.headers.get("x-forwarded-for") || "local";
 
-    const rateLimitKey = `rate_limit:google_callback:${identifier}`;
-    const currentCount = await redis.incr(rateLimitKey);
-
-    if (currentCount === 1) {
-      await redis.expire(rateLimitKey, 10);
-    }
-
-    if (currentCount > 5) {
-      const ttl = await redis.ttl(rateLimitKey);
-      throw new TRPCError({
-        code: "TOO_MANY_REQUESTS",
-        message: `Слишком много запросов. Попробуйте через ${ttl} секунд.`,
-      });
-    }
+    await checkRateLimit(redis, `rate_limit:google_callback:${identifier}`, 3, 3600);
 
     const code = req.nextUrl.searchParams.get("code");
     const state = req.nextUrl.searchParams.get("state");

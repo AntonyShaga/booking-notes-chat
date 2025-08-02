@@ -22,6 +22,7 @@ export const checkRateLimit = async (
   }
 
   if (attempts > maxAttempts) {
+    console.warn(`[RateLimit] Too many attempts for key: ${key}`);
     throw new TRPCError({
       code: "TOO_MANY_REQUESTS",
       message: "Превышено количество попыток. Попробуйте позже.",
