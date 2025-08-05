@@ -12,12 +12,12 @@ export async function sendEmail({
   to: string;
   subject: string;
   token: string;
-  type?: "verify" | "2fa";
+  type?: "verify" | "two-factor-page";
 }) {
   try {
     let html: string;
 
-    if (type === "2fa") {
+    if (type === "two-factor-page") {
       html = await render(<TwoFATokenEmail token={token} />);
     } else {
       html = await render(

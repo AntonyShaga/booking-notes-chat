@@ -3,10 +3,8 @@ import { NextResponse } from "next/server";
 import { randomBytes, createHash } from "crypto";
 
 export async function GET() {
-  // Генеруємо code_verifier (випадковий рядок 32-96 байт)
   const codeVerifier = randomBytes(32).toString("base64url");
 
-  // Обчислюємо code_challenge (SHA-256 від verifier)
   const codeChallenge = createHash("sha256").update(codeVerifier).digest("base64url");
 
   const state = randomBytes(16).toString("hex");
@@ -19,11 +17,10 @@ export async function GET() {
     access_type: "offline",
     prompt: "consent",
     state,
-    code_challenge: codeChallenge, // Додаємо PKCE
-    code_challenge_method: "S256", // Метод хешування (SHA-256)
+    code_challenge: codeChallenge,
+    code_challenge_method: "S256",
   });
 
-  // Зберігаємо state та code_verifier в cookies
   const response = NextResponse.redirect(
     `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`
   );

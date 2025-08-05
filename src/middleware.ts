@@ -5,7 +5,7 @@ import { jwtVerify } from "jose";
 export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  const publicPaths = ["/", "/login", "/signup", "/verify-email", "/2fa"];
+  const publicPaths = ["/", "/login", "/signup", "/verify-email", "/two-factor-page"];
   if (publicPaths.includes(pathname)) {
     return NextResponse.next();
   }

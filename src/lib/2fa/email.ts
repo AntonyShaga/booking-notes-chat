@@ -18,7 +18,7 @@ export async function startEmail2FA({
     to: string;
     subject: string;
     token: string;
-    type: "2fa" | "verify";
+    type: "two-factor-page" | "verify";
   }) => Promise<void>;
 }) {
   const cooldownKey = redisKeys.cooldown(user.id);
@@ -50,7 +50,7 @@ export async function startEmail2FA({
     to: user.email,
     subject: "Ваш код подтверждения 2FA",
     token,
-    type: "2fa",
+    type: "two-factor-page",
   });
 
   return { method: "email" };
