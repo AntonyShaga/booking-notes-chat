@@ -1,32 +1,32 @@
 # 🔐 Модульная система аутентификации с JWT, 2FA и OAuth
 
-Полноценная и современная система аутентификации, построенная на **Next.js App Router** с безопасным управлением сессиями, двухфакторной защитой и OAuth-провайдерами.
+A complete and modern authentication system built on **Next.js App Router** with secure session management, two-factor authentication, and OAuth providers.
 
-Система включает:
+The system includes:
 
-* Надёжный вход по логину/паролю с **Argon2**
-* Верификацию email и защиту от спама
-* **2FA** (TOTP и Email-коды)
-* **OAuth** через Google (PKCE) и GitHub (state)
-* Безопасное хранение токенов (**JWT + HttpOnly cookies**)
-* Автоматическое обновление Access токена
-* Отзыв Refresh токенов и контроль активных сессий
+* Reliable login with username/password using **Argon2**
+* Email verification and spam protection
+* **2FA** (TOTP and Email codes)
+* **OAuth** via Google (PKCE) and GitHub (state)
+* Secure token storage (**JWT + HttpOnly cookies**)
+* Automatic Access Token renewal
+* Revocation of Refresh Tokens and active session control
 
 ---
 
-## 🚀 Ключевые особенности
+## 🚀 Key Features
 
-* ✅ **OAuth 2.0 с PKCE** (Google) и `state` (GitHub)
-* ✅ **2FA**: TOTP (QR-код) и одноразовые Email-коды
-* ✅ **JWT с refresh токенами и HttpOnly-куками**
-* ✅ **Rate limiting** и защита от спама через Redis
-* ✅ **Email верификация** с Resend
-* ✅ **Zod** — строгая валидация входящих данных
+* ✅ **OAuth 2.0 с PKCE** (Google) and state (GitHub)
+* ✅ **2FA**: TOTP (QR code) and one-time Email codes
+* ✅ **JWT with refresh tokens and HttpOnly cookies**
+* ✅ **Rate limiting** and spam protection with Redis
+* ✅ **Email verification** with Resend
+* ✅ **Zod** — strict validation of incoming data
 * ✅ **Безопасная архитектура**: jti, revocation, cookie protection
 
 ---
 
-## ⚙️ Используемые технологии
+## ⚙️ Technologies Used
 
 * **Next.js (App Router)** — фронтенд и серверные API
 * **tRPC** — типобезопасная клиент-сервер архитектура
