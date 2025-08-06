@@ -22,66 +22,66 @@ The system includes:
 * ✅ **Rate limiting** and spam protection with Redis
 * ✅ **Email verification** with Resend
 * ✅ **Zod** — strict validation of incoming data
-* ✅ **Безопасная архитектура**: jti, revocation, cookie protection
+* ✅ **Secure architecture**: jti, revocation, cookie protection
 
 ---
 
 ## ⚙️ Technologies Used
 
-* **Next.js (App Router)** — фронтенд и серверные API
-* **tRPC** — типобезопасная клиент-сервер архитектура
-* **Prisma + PostgreSQL** — ORM и база данных
-* **Redis** — для лимитов, 2FA и верификационных токенов
-* **JWT (jsonwebtoken)** — управление сессиями
-* **Argon2** — безопасное хеширование паролей
-* **otplib** — генерация TOTP и QR
-* **google-auth-library** — проверка ID токенов Google
-* **Zod** — строгая валидация данных
-* **Resend** — отправка email-писем
+* **Next.js (App Router)** — frontend and server-side APIs
+* **tRPC** — type-safe client-server architecture
+* **Prisma + PostgreSQL** — ORM and database
+* **Redis** — for rate limits, 2FA, and verification tokens
+* **JWT (jsonwebtoken)** —  session management
+* **Argon2** — secure password hashing
+* **otplib** — TOTP and QR generation
+* **google-auth-library** — Google ID token verification
+* **Zod** — strict data validation
+* **Resend** — email sending
 
 ---
 
-## 🧭 Архитектура и Потоки
+## 🧭 Architecture and Flows
 
-### 🔑 1. Вход в систему
+### 🔑 1.  User Login
 
-* Проверка логина/пароля, rate limit по IP
-* Если 2FA включена — токены не выдаются, ожидание подтверждения
-* Без 2FA — сразу выдаются Access и Refresh токены в куки
+* Login/password verification, IP-based rate limiting
+* If 2FA is enabled, no tokens are issued; waits for confirmation
+* Without 2FA, Access and Refresh tokens are immediately issued to cookies
 
-### 🔐 2. Прохождение 2FA
+### 🔐 2. 2FA Completion
 
-* Ввод TOTP или Email-кода
-* Успех → генерация токенов → установка куков
+* Enter a TOTP or Email code
+* Success → token generation → cookie issuance
 
 ### 🌐 3. OAuth (Google / GitHub)
 
-* Генерация state (всегда), + code\_challenge (только Google)
-* После авторизации — верификация state/id\_token
-* Пользователь создаётся/обновляется в базе → выдача токенов
+* Generate state (always), + code_challenge (Google only)
+* After authorization, verify state / id_token
+* User is created/updated in the database → tokens are issued
 
-### ♻️ 4. Обновление Access токена
+### ♻️ 4. Access Token Renewal
 
-* Access токен истёк → API возвращает 401
-* В `tRPC context` проверяется refresh токен из cookie
-* Если валиден → генерация новой пары → обновление куков
+* Access token expires → API returns 401
+* In `tRPC context` the refresh token from the cookie is checked
+* If valid → a new token pair is generated → cookies are updated
 
 ### 🚪 5. Logout
 
-* Refresh токен удаляется из базы (revocation)
-* Куки очищаются
+* Refresh token is removed from the database (revocation)
+* Cookies are cleared
 
-### 📧 6. Email верификация
+### 📧 6. Email Verification
 
-* При регистрации генерируется уникальный токен с TTL
-* Письмо отправляется через Resend
-* Эндпоинт активирует email + защита от повторной отправки (cooldown)
+* Upon registration, a unique token with a TTL is generated
+* Email is sent via Resend
+* Endpoint activates email + protection against re-sending (cooldown)
 
 ---
 
-## 🛠️ Настройка и запуск
+## 🛠️ Setup and Running
 
-### 📁 Переменные окружения `.env`
+### 📁 Environment Variables `.env`
 
 ```env
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
@@ -109,22 +109,22 @@ RESEND_API_KEY="..."
 RESEND_FROM_EMAIL="no-reply@yourdomain.com"
 ```
 
-### ⚙️ Шаги запуска
+### ⚙️ Getting Started
 
 ```bash
-# 1. Клонировать проект
+# 1. Clone the project
 $ git clone <репозиторий>
 
-# 2. Установить зависимости
+# 2. Install dependencies
 $ npm install
 
-# 3. Настроить .env
+# 3. Configure .env
 
-# 4. Выполнить миграции и генерацию Prisma
+# 4. Run Prisma migrations and generate client
 $ npx prisma migrate dev
 $ npx prisma generate
 
-# 5. Запустить проект
+# 5. Run the project
 $ npm run dev
 ```
 
@@ -132,16 +132,16 @@ $ npm run dev
 
 ## 🔄 Отличие от “Next.js Login Page” от Corbado
 
-Руководство от Corbado реализует базовую аутентификацию (Pages Router + MongoDB + email OTP).
+The guide by Corbado implements a basic authentication (Pages Router + MongoDB + email OTP).
 
-Моя версия — **современное решение**:
+My version is a — **modern solution**:
 
-* ✅ Использует App Router и `tRPC`
-* ✅ Основана на PostgreSQL + Prisma (типобезопасность и контроль)
-* ✅ Добавлены полноценные JWT токены, refresh-куки, revocation
-* ✅ Поддержка **двух видов 2FA**: QR-коды и Email-коды
-* ✅ Ограничения по попыткам входа, верификации и регистрации
-* ✅ Модульная архитектура, готовая к продакшену
+* ✅ Uses App Router and `tRPC`
+* ✅ Based on PostgreSQL + Prisma (type safety and control)
+* ✅ Added full JWT tokens, refresh cookies, and revocation
+* ✅ Supports  **двух видов 2FA**: QR codes and Email codes
+* ✅ Login attempt limits, verification, and registration cooldowns
+* ✅ Modular architecture, ready for production
 
 ---
 
