@@ -1,6 +1,9 @@
-# 🔐 Модульная система аутентификации с JWT, 2FA и OAuth
+# 🔐 Modular Authentication System with JWT, 2FA, and OAuth
 
 A complete and modern authentication system built on **Next.js App Router** with secure session management, two-factor authentication, and OAuth providers.
+
+## 🌐 Live Demo
+[Link to Vercel](https://booking-notes-chat.vercel.app/)
 
 The system includes:
 
@@ -11,6 +14,14 @@ The system includes:
 * Secure token storage (**JWT + HttpOnly cookies**)
 * Automatic Access Token renewal
 * Revocation of Refresh Tokens and active session control
+
+---
+
+## 🛠️ Deployment
+1. **Database**: Created a PostgreSQL database on Railway and connected it via DATABASE_URL.
+2. **Redis**: Added to Railway and configured REDIS_URL.
+3. **Environment Variables**: Added all secrets to Vercel.
+4. **Migrations**: Ran prisma migrate deploy using the Railway CLI.
 
 ---
 
@@ -113,7 +124,7 @@ RESEND_FROM_EMAIL="no-reply@yourdomain.com"
 
 ```bash
 # 1. Clone the project
-$ git clone <репозиторий>
+$ git clone <repository>
 
 # 2. Install dependencies
 $ npm install
@@ -130,7 +141,7 @@ $ npm run dev
 
 ---
 
-## 🔄 Отличие от “Next.js Login Page” от Corbado
+## 🔄 Difference from “Next.js Login Page” от Corbado
 
 The guide by Corbado implements a basic authentication (Pages Router + MongoDB + email OTP).
 
@@ -139,7 +150,7 @@ My version is a — **modern solution**:
 * ✅ Uses App Router and `tRPC`
 * ✅ Based on PostgreSQL + Prisma (type safety and control)
 * ✅ Added full JWT tokens, refresh cookies, and revocation
-* ✅ Supports  **двух видов 2FA**: QR codes and Email codes
+* ✅ Supports  **two types of 2FA**: QR codes and Email codes
 * ✅ Login attempt limits, verification, and registration cooldowns
 * ✅ Modular architecture, ready for production
 

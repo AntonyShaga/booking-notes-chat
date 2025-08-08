@@ -13,7 +13,8 @@ export async function withServerSession<T>(
     if (!userId) return null;
 
     return await callback(userId);
-  } catch {
+  } catch (error) {
+    console.error("Token verification failed:", error);
     return null;
   }
 }
