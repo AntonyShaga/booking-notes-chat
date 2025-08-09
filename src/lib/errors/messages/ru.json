@@ -44,6 +44,13 @@
       "jwtSecretMissing": "JWT_SECRET не установлен в переменных окружения",
       "invalidRefreshToken": "Неверный refresh токен",
       "errorLoggingOut": "Ошибка при выходе из аккаунта"
+    },
+    "request2FA": {
+      "userNotFound": "Пользователь не найден.",
+      "twoFANotEnabled": "Двухфакторная аутентификация не включена для данного пользователя.",
+      "invalidMethod": "Неверный метод двухфакторной аутентификации.",
+      "qrInstruction": "Откройте приложение Google Authenticator и введите код.",
+      "manualInstruction": "Введите код из приложения, с которым вы настраивали 2FA."
     }
   }
 }

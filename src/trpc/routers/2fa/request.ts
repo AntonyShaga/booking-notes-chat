@@ -4,6 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { redisKeys } from "@/lib/2fa/redis";
 import { checkRateLimit } from "@/lib/2fa/helpers";
 import { startEmail2FA } from "@/lib/2fa/email";
+import { getTranslation } from "@/lib/errors/messages";
 
 export const request2FA = publicProcedure
   .input(request2FASchema)
@@ -20,17 +21,23 @@ export const request2FA = publicProcedure
       },
     });
 
-    if (!user || !user.twoFactorEnabled) {
+    if (!user) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: getTranslation(ctx.lang, "errors.request2FA.userNotFound"),
+      });
+    }
+
+    if (!user.twoFactorEnabled) {
       throw new TRPCError({
         code: "BAD_REQUEST",
-        message: "2FA не включена или пользователь не найден",
+        message: getTranslation(ctx.lang, "errors.request2FA.twoFANotEnabled"),
       });
     }
 
     const attemptsKey = redisKeys.attempts(userId);
 
     await checkRateLimit(ctx.redis, attemptsKey);
-    await ctx.redis.del(attemptsKey);
 
     if (method === "email") {
       await startEmail2FA({
@@ -45,20 +52,20 @@ export const request2FA = publicProcedure
     if (method === "qr") {
       return {
         method: "qr",
-        message: "Откройте приложение Google Authenticator и введите код",
+        message: getTranslation(ctx.lang, "errors.request2FA.qrInstruction"),
       };
     }
 
     if (method === "manual") {
       return {
         method: "manual",
-        message: "Введите код из приложения, с которым вы настраивали 2FA",
+        message: getTranslation(ctx.lang, "errors.request2FA.manualInstruction"),
       };
     }
 
     throw new TRPCError({
       code: "BAD_REQUEST",
-      message: "Неверный метод 2FA",
+      message: getTranslation(ctx.lang, "errors.request2FA.invalidMethod"),
     });
   });
 export const requestRouter = { request2FA };

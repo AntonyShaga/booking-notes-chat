@@ -3,6 +3,7 @@ import { confirm2FASchema } from "@/shared/validations/2fa";
 import { TRPCError } from "@trpc/server";
 import { validateOTPCode } from "@/lib/2fa/validate";
 import { verifyEmail2FA } from "@/lib/2fa/email";
+import {getTranslation} from "@/lib/errors/messages";
 
 export const confirm2FASetup = protectedProcedure
   .input(confirm2FASchema)
@@ -21,7 +22,7 @@ export const confirm2FASetup = protectedProcedure
     if (userData.twoFactorEnabled) {
       throw new TRPCError({
         code: "BAD_REQUEST",
-        message: "2FA уже включена",
+        message: getTranslation(ctx.lang,)"2FA уже включена",
       });
     }
 

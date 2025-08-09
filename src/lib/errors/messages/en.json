@@ -45,6 +45,14 @@
       "jwtSecretMissing": "JWT_SECRET is not set in environment variables.",
       "invalidRefreshToken": "Invalid refresh token.",
       "errorLoggingOut": "An error occurred during logout."
+    },
+    "request2FA": {
+      "userNotFound": "User not found.",
+      "twoFANotEnabled": "Two-factor authentication is not enabled for this user.",
+      "invalidMethod": "Invalid two-factor authentication method.",
+      "qrInstruction": "Open the Google Authenticator app and enter the code.",
+      "manualInstruction": "Enter the code from the app you used to set up 2FA."
     }
+
   }
 }
