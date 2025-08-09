@@ -18,7 +18,8 @@
     "common": {
       "lastLoginUpdateError": "Error updating last login status.",
       "serverConfigError": "A server configuration error occurred. Please try again later.",
-      "requestMissing": "Request object is missing."
+      "requestMissing": "Request object is missing.",
+      "userNotFound": "User with this email was not found."
     },
     "register": {
       "emailConflict": "User with this email already exists."
@@ -52,6 +53,12 @@
       "invalidMethod": "Invalid two-factor authentication method.",
       "qrInstruction": "Open the Google Authenticator app and enter the code.",
       "manualInstruction": "Enter the code from the app you used to set up 2FA."
+    },
+    "confirm2FA": {
+      "alreadyEnabled": "2FA is already enabled.",
+      "secretMissing": "Please generate the secret first.",
+      "invalidCode": "Invalid confirmation code.",
+      "invalidMethod": "Invalid confirmation method."
     }
 
   }

@@ -3,7 +3,7 @@ import { confirm2FASchema } from "@/shared/validations/2fa";
 import { TRPCError } from "@trpc/server";
 import { validateOTPCode } from "@/lib/2fa/validate";
 import { verifyEmail2FA } from "@/lib/2fa/email";
-import {getTranslation} from "@/lib/errors/messages";
+import { getTranslation } from "@/lib/errors/messages";
 
 export const confirm2FASetup = protectedProcedure
   .input(confirm2FASchema)
@@ -16,13 +16,16 @@ export const confirm2FASetup = protectedProcedure
     });
 
     if (!userData) {
-      throw new TRPCError({ code: "UNAUTHORIZED" });
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: getTranslation(ctx.lang, "errors.common.userNotFound"),
+      });
     }
 
     if (userData.twoFactorEnabled) {
       throw new TRPCError({
         code: "BAD_REQUEST",
-        message: getTranslation(ctx.lang,)"2FA уже включена",
+        message: getTranslation(ctx.lang, "errors.confirm2FA.alreadyEnabled"),
       });
     }
 
@@ -30,7 +33,7 @@ export const confirm2FASetup = protectedProcedure
       if (!userData.twoFactorSecret) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Сначала сгенерируйте секрет",
+          message: getTranslation(ctx.lang, "errors.confirm2FA.secretMissing"),
         });
       }
 
@@ -38,7 +41,7 @@ export const confirm2FASetup = protectedProcedure
       if (!isValid) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Неверный код подтверждения",
+          message: getTranslation(ctx.lang, "errors.confirm2FA.invalidCode"),
         });
       }
 
@@ -68,7 +71,10 @@ export const confirm2FASetup = protectedProcedure
       return { success: true };
     }
 
-    throw new TRPCError({ code: "BAD_REQUEST", message: "Неверный метод подтверждения" });
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: getTranslation(ctx.lang, "errors.confirm2FA.invalidMethod"),
+    });
   });
 
 export const confirmRouter = {

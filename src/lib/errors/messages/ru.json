@@ -18,7 +18,8 @@
     "common": {
       "lastLoginUpdateError": "Ошибка обновления статуса последнего входа.",
       "serverConfigError": "Произошла ошибка конфигурации сервера. Пожалуйста, попробуйте позже.",
-      "requestMissing": "Объект запроса отсутствует."
+      "requestMissing": "Объект запроса отсутствует.",
+      "userNotFound": "Пользователь с таким email не найден."
     },
     "register": {
       "emailConflict": "Пользователь с таким email уже существует."
@@ -51,6 +52,12 @@
       "invalidMethod": "Неверный метод двухфакторной аутентификации.",
       "qrInstruction": "Откройте приложение Google Authenticator и введите код.",
       "manualInstruction": "Введите код из приложения, с которым вы настраивали 2FA."
+    },
+    "confirm2FA": {
+      "alreadyEnabled": "2FA уже включена.",
+      "secretMissing": "Сначала сгенерируйте секрет.",
+      "invalidCode": "Неверный код подтверждения.",
+      "invalidMethod": "Неверный метод подтверждения."
     }
   }
 }
