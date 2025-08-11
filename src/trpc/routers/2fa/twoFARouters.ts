@@ -5,7 +5,7 @@ import { statusRouter } from "@/trpc/routers/2fa/status";
 import { requestRouter } from "@/trpc/routers/2fa/request";
 import { setupRouter } from "@/trpc/routers/2fa/setup";
 
-export const twoFARouter = router({
+export const twoFARouters = router({
   ...setupRouter,
   ...requestRouter,
   ...statusRouter,

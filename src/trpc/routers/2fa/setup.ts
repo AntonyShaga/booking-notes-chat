@@ -5,6 +5,7 @@ import { checkRateLimit } from "@/lib/2fa/helpers";
 import { TRPCError } from "@trpc/server";
 import { generateOTPSecret, generateQRCode } from "@/lib/2fa/generate";
 import { startEmail2FA } from "@/lib/2fa/email";
+import { getTranslation } from "@/lib/errors/messages";
 
 export const enable2FA = protectedProcedure
   .input(enable2FASchema)
@@ -25,7 +26,7 @@ export const enable2FA = protectedProcedure
     if (currentUser?.twoFactorEnabled) {
       throw new TRPCError({
         code: "BAD_REQUEST",
-        message: "2FA уже включена. Сначала отключите её.",
+        message: getTranslation(ctx.lang, "errors.enable2FA.alreadyEnabled"),
       });
     }
 
@@ -56,6 +57,9 @@ export const enable2FA = protectedProcedure
       return { method: "email" };
     }
 
-    throw new TRPCError({ code: "BAD_REQUEST", message: "Неверный метод 2FA" });
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: getTranslation(ctx.lang, "errors.enable2FA.invalidMethod"),
+    });
   });
 export const setupRouter = { enable2FA };

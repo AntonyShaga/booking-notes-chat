@@ -4,7 +4,7 @@ import { TRPCError } from "@trpc/server";
 import jwt from "jsonwebtoken";
 import { getTranslation } from "@/lib/errors/messages";
 
-export const logoutRouter = router({
+export const logout = router({
   logout: protectedProcedure.mutation(async ({ ctx }) => {
     const cookieStore = await cookies();
     const refreshToken = cookieStore.get("refreshToken")?.value;

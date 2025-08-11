@@ -59,7 +59,13 @@
       "secretMissing": "Please generate the secret first.",
       "invalidCode": "Invalid confirmation code.",
       "invalidMethod": "Invalid confirmation method."
+    },
+    "enable2FA": {
+      "alreadyEnabled": "2FA is already enabled. Please disable it first.",
+      "invalidMethod": "Invalid 2FA method."
+    },
+    "auth": {
+      "unauthorized": "User is not authorized. Please log in."
     }
-
   }
 }
