@@ -31,7 +31,7 @@ export async function generateTokens(
 
   const user = await prismaClient.user.findUnique({
     where: { id: userId },
-    select: { role: true },
+    select: { role: true, twoFactorEnabled: true },
   });
   console.log(user);
   if (!user?.role) {
@@ -41,14 +41,28 @@ export async function generateTokens(
   const tokenId = generateTokenId();
 
   const [accessJwt, refreshJwt] = await Promise.all([
-    jwt.sign({ sub: userId, jti: tokenId, role: user.role }, JWT_SECRET, {
-      expiresIn: "15m",
-      algorithm: "HS256",
-    }),
-    jwt.sign({ sub: userId, jti: tokenId, isRefresh: true, role: user.role }, JWT_SECRET, {
-      expiresIn: "7d",
-      algorithm: "HS256",
-    }),
+    jwt.sign(
+      { sub: userId, jti: tokenId, role: user.role, twoFactorEnabled: user.twoFactorEnabled },
+      JWT_SECRET,
+      {
+        expiresIn: "15m",
+        algorithm: "HS256",
+      }
+    ),
+    jwt.sign(
+      {
+        sub: userId,
+        jti: tokenId,
+        isRefresh: true,
+        role: user.role,
+        twoFactorEnabled: user.twoFactorEnabled,
+      },
+      JWT_SECRET,
+      {
+        expiresIn: "7d",
+        algorithm: "HS256",
+      }
+    ),
   ]);
 
   return { accessJwt, refreshJwt, tokenId };

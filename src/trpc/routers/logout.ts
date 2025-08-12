@@ -34,7 +34,6 @@ export const logout = router({
           message: getTranslation(ctx.lang, "errors.logout.invalidRefreshToken"),
         });
       }
-      console.log(decoded);
       await ctx.prisma.user.update({
         where: { id: decoded.sub },
         data: {

@@ -30,7 +30,6 @@
       "subject": "Confirm your email",
       "alreadyVerified": "Email already verified.",
       "successfullyVerified": "Email successfully verified",
-      "resendSuccess": "Email sent!",
       "resendErrorLog": "Error sending:"
     },
     "verifyEmail": {

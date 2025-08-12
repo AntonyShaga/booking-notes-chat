@@ -18,6 +18,7 @@ export default async function middleware(req: NextRequest) {
   try {
     const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
     const { payload } = await jwtVerify(token, secret);
+    console.log("sdsdds", payload);
     const userRole = payload.role as string | undefined;
     console.log("✅ JWT валиден");
 
