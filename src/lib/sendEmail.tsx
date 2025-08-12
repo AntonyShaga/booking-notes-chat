@@ -29,7 +29,7 @@ export async function sendEmail({
     }
 
     await resend.emails.send({
-      from: "no-reply@resend.dev",
+      from: "no-reply@updates.shaga.dev",
       to,
       subject,
       html,
