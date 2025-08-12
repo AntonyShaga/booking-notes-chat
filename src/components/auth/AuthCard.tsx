@@ -22,7 +22,7 @@ export function AuthCard({ isLogin }: Props) {
       console.log(data);
       if (data.requires2FA) {
         sessionStorage.setItem("2fa_user_id", data.userId);
-        router.push("/2fa");
+        router.push("/two-factor-page");
         return;
       }
       window.location.href = "/";
