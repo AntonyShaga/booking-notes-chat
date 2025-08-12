@@ -19,8 +19,6 @@ export const login = publicProcedure.input(loginSchema).mutation(async ({ input,
     },
   });
 
-  const errorMessage = getTranslation(ctx.lang, "errors.login");
-  console.log("asas", errorMessage);
   const identifier =
     ctx.req.headers.get("x-real-ip") || ctx.req.headers.get("x-forwarded-for") || "local";
 
