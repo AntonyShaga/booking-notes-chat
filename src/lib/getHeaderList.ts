@@ -1,6 +1,6 @@
 export const getHeaderList = () => [
-  { href: "/", label: "Главная" },
-  { href: "/bookings", label: "Бронирование" },
-  { href: "/orders", label: "Заказы" },
-  { href: "/dashboard", label: "dashboard" },
+  { href: "/", label: "Home" },
+  { href: "/bookings", label: "Bookings" },
+  { href: "/orders", label: "Orders" },
+  { href: "/dashboard", label: "Dashboard" },
 ];

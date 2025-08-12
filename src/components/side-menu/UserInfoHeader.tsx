@@ -26,12 +26,12 @@ export default function UserInfoHeader({ onClickToggle, userPicture, userName }:
           <span
             className="w-8 h-8 bg-blue-400 rounded-full"
             role="img"
-            aria-label="Заглушка аватара пользователя"
+            aria-label="User avatar placeholder"
           />
         )}
-        <span className="text-sm">{userName ?? "Пользователь"}</span>
+        <span className="text-sm">{userName ?? "User"}</span>
       </div>
-      <Button className="rounded-sm bg-white p-2" aria-label="Закрыть меню" onClick={onClickToggle}>
+      <Button className="rounded-sm bg-white p-2" aria-label="Close menu" onClick={onClickToggle}>
         <CloseIcon className="w-4 h-4" />
       </Button>
     </div>

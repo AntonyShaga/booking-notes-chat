@@ -4,11 +4,11 @@ type Props = {
 };
 export default function MenuList({ onClickToggle }: Props) {
   const list = [
-    { href: "/settings", label: "Настройки" },
-    { href: "/", label: "Домой" },
+    { href: "/settings", label: "Settings" },
+    { href: "/", label: "Home" },
   ];
   return (
-    <nav aria-label="Боковая навигация">
+    <nav aria-label="Side navigation">
       <ul role="list" className={"flex flex-col gap-5"}>
         {list.map((item, index) => (
           <li

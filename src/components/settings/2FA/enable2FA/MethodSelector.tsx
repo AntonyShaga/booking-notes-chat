@@ -13,9 +13,9 @@ export default function MethodSelector({ method, setMethod }: Props) {
       value={method}
       onChange={(e) => setMethod(e.target.value as TwoFAMethod)}
     >
-      <option value="qr">QR-код</option>
-      <option value="manual">Ручной ввод</option>
-      <option value="email">Код на Email</option>
+      <option value="qr">QR Code</option>
+      <option value="manual">Manual Entry</option>
+      <option value="email">Email Code</option>
     </select>
   );
 }

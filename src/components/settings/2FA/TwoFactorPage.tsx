@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { trpc } from "@/utils/trpc";
 import MethodSelector from "@/components/settings/2FA/enable2FA/MethodSelector";
-
 import CodeVerificationSection from "@/components/settings/2FA/enable2FA/CodeVerificationSection";
 import { Button } from "@/components/ui/button";
 
@@ -20,7 +19,7 @@ export default function TwoFactorPage() {
   useEffect(() => {
     const storedId = sessionStorage.getItem("2fa_user_id");
     if (!storedId) {
-      toast.error("2FA сессия недействительна. Попробуйте снова.");
+      toast.error("2FA session is invalid. Please try again.");
       router.push("/login");
     } else {
       setUserId(storedId);
@@ -40,7 +39,7 @@ export default function TwoFactorPage() {
 
   const enable = trpc.twoFA.request2FA.useMutation({
     onSuccess(data) {
-      if (data.method === "email") toast.success("Код отправлен на email");
+      if (data.method === "email") toast.success("Code sent to email");
     },
     onError(err) {
       toast.error(err.message);
@@ -53,7 +52,7 @@ export default function TwoFactorPage() {
       <Button
         onClick={() => {
           if (!userId) {
-            toast.error("Нет userId — невозможно отправить код");
+            toast.error("No userId - unable to send code");
             return;
           }
           enable.mutate({ userId, method });
@@ -61,7 +60,7 @@ export default function TwoFactorPage() {
         className="w-full py-2 rounded mb-4"
         disabled={enable.isLoading}
       >
-        {enable.isLoading ? "Генерация..." : "Получить код"}
+        {enable.isLoading ? "Generating..." : "Get code"}
       </Button>
 
       <CodeVerificationSection

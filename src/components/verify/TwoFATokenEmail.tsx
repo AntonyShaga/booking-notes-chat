@@ -9,7 +9,7 @@ interface TwoFATokenEmailProps {
 export const TwoFATokenEmail = ({ token, email }: TwoFATokenEmailProps) => (
   <Html>
     <Head />
-    <Preview>Ваш код подтверждения для входа</Preview>
+    <Preview>Your login verification code</Preview>
     <Body
       style={{
         fontFamily: "Arial, sans-serif",
@@ -26,11 +26,11 @@ export const TwoFATokenEmail = ({ token, email }: TwoFATokenEmailProps) => (
         }}
       >
         <Text style={{ fontSize: "18px", fontWeight: "bold", marginBottom: "12px" }}>
-          Здравствуйте{email ? `, ${email}` : ""}!
+          Hello{email ? `, ${email}` : ""}!
         </Text>
 
         <Text style={{ fontSize: "16px", marginBottom: "12px" }}>
-          Вот ваш код подтверждения для входа:
+          Here is your login verification code:
         </Text>
 
         <Text
@@ -49,13 +49,13 @@ export const TwoFATokenEmail = ({ token, email }: TwoFATokenEmailProps) => (
         </Text>
 
         <Text style={{ fontSize: "14px", marginTop: "24px", color: "#6b7280" }}>
-          Этот код истекает через несколько минут. Не сообщайте его никому.
+          This code will expire in a few minutes. Do not share it with anyone.
         </Text>
 
         <Hr style={{ margin: "32px 0", borderColor: "#e5e7eb" }} />
 
         <Text style={{ fontSize: "13px", color: "#9ca3af" }}>
-          Если вы не пытались войти, просто проигнорируйте это письмо.
+          If you did not attempt to log in, please ignore this email.
         </Text>
       </Container>
     </Body>

@@ -24,13 +24,13 @@ export default function Enable2FA({ onSuccess }: { onSuccess: () => void }) {
     onSuccess(data) {
       if (data.method === "qr") setQrCode(data.qrCode);
       if (data.method === "manual") setManualSecret(data.secret);
-      if (data.method === "email") toast.success("Код отправлен на email");
+      if (data.method === "email") toast.success("Code sent to email");
     },
     onError: (err) => toast.error(err.message),
   });
   const confirm = trpc.twoFA.confirm2FASetup.useMutation({
     onSuccess() {
-      toast.success("2FA успешно включена!");
+      toast.success("2FA successfully enabled!");
       onSuccess();
     },
     onError: (err) => toast.error(err.message),
@@ -44,7 +44,7 @@ export default function Enable2FA({ onSuccess }: { onSuccess: () => void }) {
           disabled={enable.isLoading}
           className="w-full py-2 rounded mb-4"
         >
-          {enable.isLoading ? "Генерация..." : "Получить код"}
+          {enable.isLoading ? "Generating..." : "Get code"}
         </Button>
       </div>
 

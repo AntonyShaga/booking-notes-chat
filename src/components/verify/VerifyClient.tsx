@@ -16,7 +16,7 @@ export default function VerifyClient() {
 
   const verifyMutation = trpc.verifyEmail.verifyEmail.useMutation({
     onSuccess: () => {
-      toast.success("Email подтверждён!");
+      toast.success("Email verified!");
       router.replace("/");
     },
     onError: (error) => {
@@ -38,20 +38,20 @@ export default function VerifyClient() {
       {status === "loading" && (
         <>
           <LoaderCircle className="animate-spin w-10 h-10 text-blue-500 mb-2" />
-          <p>Подтверждаем ваш email...</p>
+          <p>Verifying your email...</p>
         </>
       )}
       {status === "success" && (
         <>
           <CheckCircle className="w-10 h-10 text-green-500 mb-2" />
-          <h1 className="text-xl font-bold">Email подтверждён!</h1>
+          <h1 className="text-xl font-bold">Email verified!</h1>
         </>
       )}
       {status === "error" && (
         <>
           <XCircle className="w-10 h-10 text-red-500 mb-2" />
-          <h1 className="text-xl font-bold">Ошибка подтверждения</h1>
-          <p>Возможно, ссылка устарела или недействительна.</p>
+          <h1 className="text-xl font-bold">Verification error</h1>
+          <p>The link may have expired or is invalid.</p>
         </>
       )}
     </div>

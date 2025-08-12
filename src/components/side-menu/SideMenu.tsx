@@ -18,7 +18,7 @@ export default function SideMenu({ toggle, userName, userPicture }: Props) {
       className="p-2 fixed flex flex-col gap-3 top-0 right-0 h-screen rounded-l-lg bg-white z-50 w-64"
       role="dialog"
       aria-modal="true"
-      aria-label="Боковое меню навигации"
+      aria-label="Side navigation menu"
       ref={ref}
       tabIndex={-1}
     >

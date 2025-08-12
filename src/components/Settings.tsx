@@ -31,7 +31,7 @@ export default function Settings() {
 
   const confirm = trpc.twoFA.confirm2FASetup.useMutation({
     onSuccess() {
-      toast.success("2FA успешно включена!");
+      toast.success("2FA успешно включена11!");
       resetState();
       setIsEnabled(true);
       refetch();

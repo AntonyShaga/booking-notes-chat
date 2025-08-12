@@ -20,7 +20,7 @@ export default function TwoFA({ isEnabled: initial }: Props) {
         exit={{ opacity: 0, scale: 0.95 }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
-        <h2 className="text-xl font-bold">{isEnabled ? "2FA включена" : "Включить 2FA"}</h2>
+        <h2 className="text-xl font-bold">{isEnabled ? "2FA is enabled" : "Enable 2FA"}</h2>
         <hr className="border-t border-gray-300 my-2" />
         <div className="max-w-md">
           {isEnabled ? (

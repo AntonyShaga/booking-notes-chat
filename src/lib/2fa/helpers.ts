@@ -10,7 +10,7 @@ export const checkRateLimit = async (
   const type = await redis.type(key);
 
   if (type !== "none" && type !== "string") {
-    console.warn(`[RateLimit] Redis key "${key}" has invalid type: ${type}`);
+    console.warn(`[RateLimit] Redis key "${key}" has an invalid type: ${type}`);
 
     await redis.del(key);
   }
@@ -25,7 +25,7 @@ export const checkRateLimit = async (
     console.warn(`[RateLimit] Too many attempts for key: ${key}`);
     throw new TRPCError({
       code: "TOO_MANY_REQUESTS",
-      message: "Превышено количество попыток. Попробуйте позже.",
+      message: "Exceeded number of attempts. Please try again later.",
     });
   }
 };

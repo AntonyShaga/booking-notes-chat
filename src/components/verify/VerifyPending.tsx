@@ -28,7 +28,7 @@ export default function VerifyPending() {
 
   useEffect(() => {
     if (emailStatus?.verified) {
-      toast.success("Email успешно подтвержден!");
+      toast.success("Email successfully verified!");
       router.push("/");
     }
   }, [emailStatus, router]);
@@ -57,14 +57,14 @@ export default function VerifyPending() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen text-center px-4">
-      <h1 className="text-2xl font-bold mb-2">Подтвердите вашу почту</h1>
-      <p className="mb-4">Мы отправили письмо на вашу почту.</p>
+      <h1 className="text-2xl font-bold mb-2">Please verify your email</h1>
+      <p className="mb-4">We have sent an email to your address.</p>
       <Button
         onClick={handleResend}
         disabled={isLoading || cooldownLeft > 0}
         className="px-4 py-2 rounded disabled:opacity-50"
       >
-        {cooldownLeft > 0 ? `Повторно через ${cooldownLeft}с` : "Отправить повторно"}
+        {cooldownLeft > 0 ? `Resend in ${cooldownLeft}s` : "Resend"}
       </Button>
     </div>
   );

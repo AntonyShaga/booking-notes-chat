@@ -29,7 +29,7 @@ export default function CodeVerificationSection({
         disabled={isLoading || code.length !== 6}
         className="w-full py-2 rounded"
       >
-        {isLoading ? "Проверка..." : "Подтвердить"}
+        {isLoading ? "Verifying..." : "Confirm"}
       </Button>
     </motion.div>
   );

@@ -11,7 +11,7 @@ export default function QRCodeSection({ qrCode }: { qrCode: string | null }) {
       transition={{ duration: 0.2 }}
       className="mt-4 mb-4"
     >
-      <p className="mb-2 text-center">Отсканируйте QR-код в приложении:</p>
+      <p className="mb-2 text-center">Scan the QR code with your app:</p>
       {qrCode ? (
         <img src={qrCode} alt="QR Code" className="w-48 h-48 mx-auto border rounded" />
       ) : (

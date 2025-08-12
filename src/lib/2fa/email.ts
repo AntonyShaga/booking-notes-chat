@@ -25,15 +25,15 @@ export async function startEmail2FA({
   const pendingKey = redisKeys.pending(user.id);
   const attemptsKey = redisKeys.attempts(user.id);
 
-  // 🛡️ Защита от частых попыток
+  // 🛡️ Protection against frequent attempts
   await checkRateLimit(redis, attemptsKey);
 
-  // 🕒 Cooldown между отправками
+  // 🕒 Cooldown between send attempts
   const isOnCooldown = await redis.exists(cooldownKey);
   if (isOnCooldown) {
     throw new TRPCError({
       code: "TOO_MANY_REQUESTS",
-      message: "Подождите перед повторной отправкой кода",
+      message: "Please wait before sending the code again",
     });
   }
 
@@ -48,7 +48,7 @@ export async function startEmail2FA({
 
   await sendEmail({
     to: user.email,
-    subject: "Ваш код подтверждения 2FA",
+    subject: "Your 2FA verification code",
     token,
     type: "two-factor-page",
   });
@@ -72,14 +72,14 @@ export async function verifyEmail2FA({
   if (!data?.token || data.method !== "email") {
     throw new TRPCError({
       code: "BAD_REQUEST",
-      message: "Сначала запросите код по email",
+      message: "Please request the email code first",
     });
   }
 
   if (data.token !== code) {
     throw new TRPCError({
       code: "BAD_REQUEST",
-      message: "Неверный код подтверждения",
+      message: "Invalid verification code",
     });
   }
 

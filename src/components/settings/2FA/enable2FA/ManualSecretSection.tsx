@@ -8,7 +8,7 @@ export default function ManualSecretSection({ secret }: { secret: string | null 
   const copyToClipboard = () => {
     if (secret) {
       navigator.clipboard.writeText(secret);
-      toast.success("Секрет скопирован в буфер обмена");
+      toast.success("Secret copied to clipboard");
     }
   };
 
@@ -21,7 +21,7 @@ export default function ManualSecretSection({ secret }: { secret: string | null 
       transition={{ duration: 0.2 }}
       className="mt-4 mb-4"
     >
-      <p className="mb-2 text-center">Введите этот секрет вручную:</p>
+      <p className="mb-2 text-center">Enter this secret manually:</p>
       <div className="flex items-center gap-2">
         <code className="bg-gray-100 p-2 block rounded break-all flex-1">
           {secret || "••••••••••••••••••••••••••••"}
@@ -29,7 +29,7 @@ export default function ManualSecretSection({ secret }: { secret: string | null 
         <Button
           onClick={copyToClipboard}
           className="p-2 bg-gray-200 rounded hover:bg-gray-300"
-          title="Копировать"
+          title="Copy"
         >
           <CopyIcon />
         </Button>

@@ -35,9 +35,9 @@ export async function sendEmail({
       html,
     });
 
-    console.log(`[EMAIL] Отправлено: ${to}`);
+    console.log(`[EMAIL] Sent: ${to}`);
   } catch (error) {
-    console.error("[EMAIL] Ошибка при отправке:", error);
-    throw new Error("Не удалось отправить письмо");
+    console.error("[EMAIL] Error sending email:", error);
+    throw new Error("Failed to send email");
   }
 }
