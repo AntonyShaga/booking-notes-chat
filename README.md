@@ -27,7 +27,7 @@ The system includes:
 
 ## 🚀 Key Features
 
-* ✅ **OAuth 2.0 с PKCE** (Google) and state (GitHub)
+* ✅ **OAuth 2.0 PKCE** (Google) and state (GitHub)
 * ✅ **2FA**: TOTP (QR code) and one-time Email codes
 * ✅ **JWT with refresh tokens and HttpOnly cookies**
 * ✅ **Rate limiting** and spam protection with Redis
@@ -156,3 +156,35 @@ My version is a — **modern solution**:
 
 ---
 
+## 🚀 Future Improvements and Roadmap
+
+This authentication system is actively evolving. Here's what's coming next:
+
+### 🔑 Enhanced Account Management
+- **Password rotation** with historical checks (prevent reuse)
+- **Secure email change flow** with re-verification requirements
+- **Profile personalization** with avatar uploads and bio fields
+
+### 🛡️ Advanced Access Control
+- **RBAC system** (Admin/Moderator/User tiers)
+- **Permission-scoped JWT claims** for API endpoints
+- **Admin dashboard** for user management and analytics
+
+### 📊 Security & Monitoring
+- **Device fingerprinting** for suspicious login detection
+- **Session activity log** with geographic tracking
+- **Brute-force shields** with progressive lockouts
+- **Detailed error logging** for authentication and security events
+
+### 🌐 User Experience
+- **i18n support** (English/Russian/Chinese locales)
+- **Theme engine** (dark/light/system preferences)
+- **Session manager** (view/revoke active logins)
+
+### ⚙️ Technical Upgrades
+- **Passkey/FIDO2** support for passwordless auth
+- **WebAuthn integration** for hardware 2FA
+- **Rate limit tuning** via Redis sliding windows
+
+---
+[↑ Back to Top](#-modular-authentication-system-with-jwt-2fa-and-oauth)
