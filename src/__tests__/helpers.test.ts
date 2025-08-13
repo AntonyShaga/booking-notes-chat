@@ -10,6 +10,6 @@ describe("checkRateLimit", () => {
       await checkRateLimit(redis, key, 5, 60);
     }
 
-    await expect(checkRateLimit(redis, key, 5, 60)).rejects.toThrow("Превышено количество попыток");
+    await expect(checkRateLimit(redis, key, 5, 60)).rejects.toThrow("Exceeded number of attempts");
   });
 });

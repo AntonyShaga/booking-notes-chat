@@ -1,6 +1,7 @@
 import { cookies as mockCookies } from "next/headers";
 import { setAuthCookies } from "@/lib/auth/cookies";
 
+// Mocking the 'next/headers' module
 jest.mock("next/headers", () => ({
   cookies: jest.fn(),
 }));
@@ -15,7 +16,7 @@ describe("setAuthCookies", () => {
     });
   });
 
-  it("устанавливает access и refresh токены", async () => {
+  it("sets access and refresh tokens", async () => {
     const access = "access_token";
     const refresh = "refresh_token";
 
